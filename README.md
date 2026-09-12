@@ -1,16 +1,30 @@
 ## Hi there 👋
 
 <!--
-**ispartaliemir32/ispartaliemir32** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+**ispartaliemir32# 👋 Hi, I'm Emir 🇹🇷🇳🇱
 
-Here are some ideas to get you started:
+### IT System Engineer | Cloud • Infrastructure • Applications • Development
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+All-round IT professional working across infrastructure, cloud, application management and software development.
+
+## 🛠️ Tech & Tools
+
+**Cloud & Infrastructure**  
+Azure • Kubernetes • Docker • Terraform • Microsoft Entra ID
+
+**Development**  
+Java • Spring Boot • TypeScript • React • PostgreSQL
+
+**DevOps & Integration**  
+Git • GitHub Actions • CI/CD • REST APIs • OpenAPI
+
+**IT Management**  
+Microsoft 365 • Intune • PowerShell • Windows • Networking
+
+## 🚀 Currently focusing on
+
+- Cloud & infrastructure engineering
+- API integrations
+- Kubernetes & containerized applications
+- CI/CD & automation
+- Application management
