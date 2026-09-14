@@ -1,30 +1,48 @@
-## Welkom!
+# 👋 Hi, I'm Emir
 
-<!--
-**ispartaliemir32# 👋 Hi, I'm Emir 🇹🇷🇳🇱
+### IT System Engineer · Cloud · Infrastructure · Applications · Development
 
-### IT System Engineer | Cloud • Infrastructure • Applications • Development
+All-round IT professional focused on building, managing and improving modern IT environments. I work across cloud infrastructure, endpoint management, identity, application management, automation, APIs and software development.
 
-All-round IT professional working across infrastructure, cloud, application management and software development.
-
-## 🛠️ Tech & Tools
+## ⚙️ Tech stack
 
 **Cloud & Infrastructure**  
-Azure • Kubernetes • Docker • Terraform • Microsoft Entra ID
+Azure · Kubernetes · Docker · Terraform · Cloudflare · Networking
+
+**Identity & Workplace**  
+Microsoft Entra ID · Intune · Microsoft 365 · Windows · PowerShell
 
 **Development**  
-Java • Spring Boot • TypeScript • React • PostgreSQL
+Java · Spring Boot · TypeScript · React · PostgreSQL · REST APIs · OpenAPI
 
-**DevOps & Integration**  
-Git • GitHub Actions • CI/CD • REST APIs • OpenAPI
+**DevOps**  
+Git · GitHub Actions · CI/CD · Infrastructure as Code · Azure OIDC
 
-**IT Management**  
-Microsoft 365 • Intune • PowerShell • Windows • Networking
+## 🚀 Featured project
 
-## 🚀 Currently focusing on
+### [Azure Enterprise Platform](https://github.com/ispartaliemir32/azure-enterprise-platform)
+Production-style Azure infrastructure lab built with Terraform, GitHub Actions and Azure OIDC.
 
-- Cloud & infrastructure engineering
-- API integrations
-- Kubernetes & containerized applications
-- CI/CD & automation
-- Application management
+It demonstrates:
+- reusable Terraform modules
+- AKS, ACR, Key Vault and PostgreSQL
+- isolated networking and private services
+- managed identities and secretless GitHub → Azure authentication
+- dev/prod environment separation
+- automated validation and security scanning
+
+## 🎯 Currently building
+
+- cloud and infrastructure engineering projects
+- API integrations and backend services
+- Kubernetes/container platforms
+- CI/CD and automation
+- enterprise Microsoft environments
+
+## 📌 What I care about
+
+I like solving the entire problem instead of only one layer of it: from end-user issues and application management to APIs, infrastructure, cloud, security and deployment.
+
+---
+
+`Azure` `Kubernetes` `Terraform` `Docker` `Java` `Spring Boot` `TypeScript` `React` `PostgreSQL` `Entra ID` `Intune` `PowerShell` `GitHub Actions`
