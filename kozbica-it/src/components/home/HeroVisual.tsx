@@ -1,5 +1,5 @@
 import { Check, Cloud, DatabaseBackup, Fingerprint, Headset, Laptop, Mails, ShieldCheck, UserPlus, type LucideIcon } from "lucide-react";
-import { LogoMark } from "@/components/brand/LogoMark";
+import shield from "@/assets/brand/kozbica-it-schild.png";
 
 /**
  * Decoratieve illustratie van een beheerde IT-omgeving: één centraal
@@ -63,7 +63,14 @@ export function HeroVisual() {
 
           <circle cx={CENTER.x} cy={CENTER.y} r="58" fill="rgb(7 159 165 / 0.10)" className="animate-pulse-soft origin-center [transform-box:fill-box]" />
           <circle cx={CENTER.x} cy={CENTER.y} r="44" fill="#163049" stroke="rgb(47 181 186 / 0.55)" strokeWidth="1.5" />
-          <LogoMark x={CENTER.x - 19} y={CENTER.y - 22} width="38" height="44" />
+          {/* Officieel schildsymbool; de circuitlijnen zijn uitsparingen en tonen de cirkel erachter. */}
+          <image
+            href={shield.src}
+            x={CENTER.x - (52 * shield.width) / shield.height / 2}
+            y={CENTER.y - 26}
+            width={(52 * shield.width) / shield.height}
+            height="52"
+          />
 
           {nodes.map((node) => {
             const Icon = node.icon;

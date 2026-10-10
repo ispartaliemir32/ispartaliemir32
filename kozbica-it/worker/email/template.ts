@@ -58,7 +58,7 @@ export function buildContactEmail(data: ContactSubmission, meta: { receivedAt: D
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${escapeHtml(subject)}</title></head>
 <body style="margin:0;padding:24px;background:#f4f8fa;font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#142536">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e1e9ee">
-    <tr><td style="background:#102334;padding:20px 24px;color:#ffffff;font-size:18px;font-weight:700">Kozbica IT <span style="color:#2fb5ba">· nieuwe aanvraag</span></td></tr>
+    <tr><td style="background:#122636;padding:20px 24px;color:#ffffff;font-size:18px;font-weight:700">Kozbica IT <span style="color:#2fb5ba">· nieuwe aanvraag</span></td></tr>
     <tr><td style="padding:20px 12px 4px 12px;color:#4f6275;font-size:13px">&nbsp;&nbsp;Ontvangen op ${escapeHtml(when)} via ${escapeHtml(meta.siteHost)}</td></tr>
     <tr><td style="padding:8px 12px"><table role="presentation" cellpadding="0" cellspacing="0" width="100%">${tableRows}</table></td></tr>
     <tr><td style="padding:8px 24px 0 24px;color:#4f6275;font-size:14px">Bericht</td></tr>

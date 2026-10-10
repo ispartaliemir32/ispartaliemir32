@@ -34,13 +34,6 @@ export const site = {
     address: "[ADRES]",
   },
   /**
-   * Logo-instelling. Zolang het officiële logobestand niet in het project staat,
-   * wordt een tijdelijk logo (schild + woordmerk) als inline SVG getoond.
-   * Officieel logo gebruiken: zet de bestanden in /public/brand/ en wijzig naar:
-   *   { type: "image", src: "/brand/kozbica-it-logo.svg", srcOnDark: "/brand/kozbica-it-logo-wit.svg", width: 180, height: 44 }
-   */
-  logo: { type: "placeholder" } as LogoConfig,
-  /**
    * Juridische status. Zet op `false` zodra een jurist de tekst heeft goedgekeurd:
    * dan verdwijnen de concept-banner en de markeringen "Juridisch controleren".
    */
@@ -50,10 +43,6 @@ export const site = {
     lastUpdated: "10 oktober 2026",
   },
 } as const;
-
-export type LogoConfig =
-  | { type: "placeholder" }
-  | { type: "image"; src: string; srcOnDark: string; width: number; height: number };
 
 /** True als de waarde nog een [PLACEHOLDER] is. */
 export function isPlaceholder(value: string): boolean {

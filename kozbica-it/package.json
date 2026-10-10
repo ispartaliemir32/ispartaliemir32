@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit && tsc -p worker/tsconfig.json --noEmit",
     "test": "vitest run",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "icons": "node scripts/generate-icons.mjs"
+    "brand": "node scripts/generate-brand-assets.mjs"
   },
   "dependencies": {
     "lucide-react": "1.55.0",
