@@ -1,0 +1,30 @@
+# Cloudflare Workers Static Assets: headers voor alle statische responses.
+# Deze regels gelden NIET voor responses die de Worker zelf maakt (/api/*);
+# die beveiligingsheaders staan in worker/http.ts.
+#
+# De Content-Security-Policy voor scripts staat per pagina als <meta>-tag in de
+# HTML (met SHA-256-hashes van de inline scripts), gegenereerd door
+# scripts/postbuild.mjs. De header hieronder vult aan met directives die niet
+# via een meta-tag kunnen (zoals frame-ancestors).
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Strict-Transport-Security: max-age=31536000
+  Content-Security-Policy: frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'; upgrade-insecure-requests
+
+# Bestanden met een hash in de naam mogen lang in de cache.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# De Open Graph-afbeelding wordt door Next.js zonder extensie geëxporteerd.
+/opengraph-image
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400
+
+# Voorkom dat de workers.dev-test-URL in zoekmachines belandt.
+https://:project.:subdomain.workers.dev/*
+  X-Robots-Tag: noindex

@@ -1,0 +1,371 @@
+# Kozbica IT website
+
+Production-ready website for **Kozbica IT** (Rotterdam), a Dutch B2B IT services company, built for **Cloudflare Workers Static Assets**.
+
+All customer-facing content is in Dutch. This README is the technical handbook: installation, configuration, deployment, custom domain, and what still needs your input.
+
+---
+
+## Contents
+
+1. [Architecture](#1-architecture)
+2. [Project structure](#2-project-structure)
+3. [Requirements](#3-requirements)
+4. [Run locally](#4-run-locally)
+5. [Configuration (variables and secrets)](#5-configuration)
+6. [Set up Cloudflare Turnstile](#6-set-up-cloudflare-turnstile)
+7. [Set up email delivery](#7-set-up-email-delivery)
+8. [Deploy: Wrangler CLI](#8-deploy-option-a--wrangler-cli)
+9. [Deploy: Cloudflare dashboard (Git)](#9-deploy-option-b--cloudflare-dashboard-workers-builds)
+10. [Custom domain, DNS and HTTPS](#10-custom-domain-dns-and-https)
+11. [Before go-live: placeholders, logo and content review](#11-before-go-live)
+12. [Security](#12-security)
+13. [Quality checks and tests](#13-quality-checks-and-tests)
+14. [Costs and plan limits](#14-costs-and-plan-limits)
+15. [Scripts](#15-scripts)
+
+---
+
+## 1. Architecture
+
+```
+Visitor ──HTTPS──▶ Cloudflare (your domain)
+                     │
+                     ├── /, /diensten, /it-beheer, …  ──▶  Workers Static Assets  (./out, static HTML)
+                     │                                     free & unlimited, headers from _headers
+                     │
+                     └── /api/contact  ──▶  Worker (worker/index.ts)
+                                              1. method / Origin / Content-Type checks
+                                              2. rate limiting (Workers Rate Limiting binding)
+                                              3. honeypot + minimum fill time
+                                              4. server-side validation (same rules as the browser)
+                                              5. Cloudflare Turnstile Siteverify
+                                              6. email via EMAIL_PROVIDER:
+                                                 cloudflare (default) | msgraph | resend
+```
+
+**Why this setup?**
+
+- **Next.js 16 (App Router) static export.** Every page is pre-rendered to HTML at build time. No Node.js server is needed, which makes it fast, cheap and robust. (Cloudflare's recommended path for *server-rendered* Next.js is the vinext adapter, which is still in beta. This site doesn't need SSR, so the static export avoids that dependency.)
+- **One Worker for the contact form.** `assets.run_worker_first: ["/api/*"]` means the Worker only runs for API calls. All page views are served straight from the asset store. Per Cloudflare's docs, static asset requests are free and don't count toward the Workers request limit.
+- **No database, no cookies, no tracking.** Form submissions are emailed to you, not stored.
+
+Verified against Cloudflare's documentation and the Wrangler config schema (the docs were read via the official `cloudflare/cloudflare-docs` repository on GitHub):
+
+| Feature | Cloudflare feature used |
+| --- | --- |
+| Static pages, clean URLs, 404 page | Workers Static Assets: `html_handling: auto-trailing-slash`, `not_found_handling: 404-page` |
+| Worker only for `/api/*` | `assets.run_worker_first` (array of route patterns) |
+| Security headers on pages | `_headers` file in the asset directory (applies to asset responses only, so the Worker sets its own headers) |
+| Spam protection | Turnstile widget plus server-side Siteverify |
+| Rate limiting | `ratelimits` binding (Wrangler ≥ 4.36; period must be 10 or 60 s) |
+| Email | `send_email` binding (Cloudflare Email Service), Microsoft Graph or Resend |
+| Secrets | `wrangler secret put` / dashboard *Variables & Secrets* |
+
+## 2. Project structure
+
+```
+kozbica-it/
+├── src/
+│   ├── app/                      # Pages (App Router), metadata, sitemap, robots, manifest, icons, OG image
+│   │   ├── page.tsx              # Home
+│   │   ├── diensten/             # Services (7 detailed sections)
+│   │   ├── it-beheer/            # Managed IT landing page + packages
+│   │   ├── over-ons/             # About
+│   │   ├── contact/              # Contact page + form
+│   │   ├── privacyverklaring/    # Privacy policy (DRAFT)
+│   │   ├── algemene-voorwaarden/ # Terms & conditions (DRAFT, noindex)
+│   │   └── globals.css           # Tailwind CSS v4 config (@theme: colours, fonts, shadows)
+│   ├── components/               # UI, layout, sections, contact form, legal
+│   ├── config/site.ts            # ★ Company details, placeholders, logo, legal status
+│   ├── content/                  # ★ Texts: services, packages, FAQ, navigation
+│   └── lib/                      # Shared validation, metadata, Schema.org
+├── worker/                       # Cloudflare Worker (contact API)
+│   ├── index.ts, contact.ts, turnstile.ts, http.ts, env.ts
+│   └── email/                    # cloudflare.ts, msgraph.ts, resend.ts, template.ts
+├── public/_headers               # Security and cache headers for static assets
+├── scripts/
+│   ├── postbuild.mjs             # CSP hashes + link/anchor/header/secret checks (build fails on errors)
+│   ├── generate-icons.mjs        # favicon.ico, apple-icon, manifest icons from src/app/icon.svg
+│   └── ensure-out-dir.mjs
+├── tests/                        # Vitest: validation + Worker (42 tests)
+├── wrangler.jsonc                # ★ Cloudflare configuration
+├── .env.example                  # Build variables (public)
+└── .dev.vars.example             # Local Worker variables/secrets
+```
+
+★ = files you will edit.
+
+**Tailwind configuration:** Tailwind CSS v4 is configured "CSS-first". The brand colours (navy `#102334`, turquoise `#079FA5`, accent `#087F89`, mist `#F4F8FA`, text `#142536`), fonts (Manrope headings, Inter body) and shadows live in the `@theme` block of `src/app/globals.css`. There is no `tailwind.config.js` in v4.
+
+## 3. Requirements
+
+- Node.js **22.12 or newer** (tested with Node 22; `.nvmrc` pins 22 for Cloudflare's build image)
+- npm 10+
+- A Cloudflare account (Free plan is sufficient; see [section 14](#14-costs-and-plan-limits))
+- For a custom domain: the domain's DNS managed by Cloudflare
+
+## 4. Run locally
+
+```bash
+npm ci                                  # install exact versions from package-lock.json
+cp .env.example .env.local              # build/dev variables (public)
+cp .dev.vars.example .dev.vars          # Worker variables for local use (test keys)
+```
+
+In `.env.local`, set `NEXT_PUBLIC_TURNSTILE_SITE_KEY=1x00000000000000000000AA` (Cloudflare's official test key) and `NEXT_PUBLIC_SITE_URL=http://localhost:3000`.
+
+**Option 1: development with hot reload (two terminals)**
+
+```bash
+npm run dev:worker   # terminal 1: Worker on http://127.0.0.1:8787 (contact API)
+npm run dev          # terminal 2: Next.js on http://localhost:3000 (proxies /api/* to the Worker)
+```
+
+**Option 2: production-like preview (recommended before every deploy)**
+
+```bash
+cp .env.example .env.production.local   # set test values, see above
+npm run preview                         # builds ./out and serves site + Worker via wrangler dev on :8787
+```
+
+Locally, `wrangler dev` *simulates* the `send_email` binding: emails are written to the terminal and to `.wrangler/tmp/email/`, not actually sent.
+
+> **Note:** with the Turnstile test keys, Siteverify still has to reach `challenges.cloudflare.com`. Without internet access the API returns `503 verification_unavailable`, which is the intended behaviour during an outage.
+
+## 5. Configuration
+
+### 5.1 Build variables (public, baked into the HTML)
+
+Set them in `.env.production.local` (CLI) or in the dashboard under **Workers & Pages → kozbica-it → Settings → Build → Variables and secrets** (Git builds).
+
+| Variable | Required | Example | Purpose |
+| --- | --- | --- | --- |
+| `NEXT_PUBLIC_SITE_URL` | yes | `https://www.kozbica.nl` | Canonical URL for canonical tags, Open Graph, sitemap and robots |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | yes | `0x4AAAA…` | Turnstile **site** key (public) |
+
+The production build **stops with a clear error** if either is missing, and warns if a Turnstile test key is used.
+
+### 5.2 Worker variables (not secret): `wrangler.jsonc` → `vars`
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `EMAIL_PROVIDER` | `cloudflare` | `cloudflare`, `msgraph` or `resend` |
+| `CONTACT_TO_EMAIL` | *(empty)* | **Fill in.** Where enquiries are delivered |
+| `CONTACT_FROM_EMAIL` | *(empty)* | **Fill in.** Sender address (see section 7) |
+| `CONTACT_FROM_NAME` | `Kozbica IT website` | Sender display name |
+| `TURNSTILE_ALLOWED_HOSTNAMES` | *(empty)* | Optional, e.g. `kozbica.nl,www.kozbica.nl`. Extra check on the hostname that issued the token |
+| `MSGRAPH_TENANT_ID`, `MSGRAPH_CLIENT_ID` | *(empty)* | Only for `msgraph` |
+
+> `wrangler deploy` treats `wrangler.jsonc` as the source of truth for `vars`, so change these values in that file, not only in the dashboard.
+
+### 5.3 Worker secrets (never in Git)
+
+```bash
+npx wrangler secret put TURNSTILE_SECRET_KEY     # always
+npx wrangler secret put RESEND_API_KEY           # only for EMAIL_PROVIDER=resend
+npx wrangler secret put MSGRAPH_CLIENT_SECRET    # only for EMAIL_PROVIDER=msgraph
+```
+
+Or in the dashboard: **Workers & Pages → kozbica-it → Settings → Variables and Secrets → Add → type *Secret***. Secrets are only available to the Worker on the server; nothing secret ever reaches the browser. `scripts/postbuild.mjs` also fails the build if secret names end up in the static output.
+
+If the email configuration is missing, the API responds with `503 not_configured` and logs which variable is missing (visible in **Workers Logs**). The visitor sees a polite error message.
+
+## 6. Set up Cloudflare Turnstile
+
+1. Cloudflare dashboard → **Turnstile** → **Add widget**.
+2. Name: `Kozbica IT contact form`. Hostnames: `kozbica.nl`, `www.kozbica.nl` (your domain), plus temporarily your `*.workers.dev` hostname for testing.
+3. Widget mode: **Managed** (recommended).
+4. Copy the **Site key** to `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (build variable).
+5. Store the **Secret key** with `npx wrangler secret put TURNSTILE_SECRET_KEY`.
+
+## 7. Set up email delivery
+
+The form sends **one notification email to you**, with *Reply-To* set to the visitor, so you can reply directly. No confirmation email goes to the visitor; that would require sending to arbitrary addresses and makes the form attractive to abuse.
+
+### Option A: Cloudflare Email Service (default, `EMAIL_PROVIDER=cloudflare`)
+
+Per Cloudflare's docs, sending to **verified destination addresses in your own account is free on all plans**. That fits a contact form exactly.
+
+1. Cloudflare dashboard → **Email → Email Routing**. Enable Email Routing for a domain you send *from*.
+   - ⚠️ Is your business email on **Microsoft 365** (MX records point to Outlook)? Then **do not** enable Email Routing on the root domain, because it uses its own MX records. Use a **subdomain**, for example `notify.kozbica.nl`.
+2. Under **Destination addresses**, add the address where you want to receive enquiries (e.g. `info@kozbica.nl`) and confirm it via the verification email.
+3. In `wrangler.jsonc`:
+   ```jsonc
+   "CONTACT_TO_EMAIL": "info@kozbica.nl",               // verified destination address
+   "CONTACT_FROM_EMAIL": "website@notify.kozbica.nl",    // address on the routing domain
+   ```
+   Recommended: restrict the binding to that one address:
+   ```jsonc
+   "send_email": [{ "name": "EMAIL", "destination_address": "info@kozbica.nl" }]
+   ```
+4. Deploy and send a test enquiry.
+
+> I verified this option against Cloudflare's documentation, not against a live account. If `wrangler deploy` rejects the `send_email` binding (for example because Email Routing isn't active yet), finish step 1 first, or choose option B or C.
+
+### Option B: Microsoft 365 via Microsoft Graph (`EMAIL_PROVIDER=msgraph`)
+
+Sends from your own Microsoft 365 environment, e.g. from a (free) **shared mailbox** `website@kozbica.nl`.
+
+1. **Entra admin center → App registrations → New registration**, e.g. `Kozbica IT website`.
+2. **Certificates & secrets → New client secret**. Note the value and the expiry date (put a renewal reminder in your calendar).
+3. Restrict the app to **only** the website mailbox. Use *RBAC for Applications* in Exchange Online, and do **not** also grant tenant-wide `Mail.Send` in Entra (those permissions add up):
+   ```powershell
+   Connect-ExchangeOnline
+   # Object ID of the Enterprise Application (service principal), not of the app registration:
+   New-ServicePrincipal -AppId <CLIENT_ID> -ObjectId <ENTERPRISE_APP_OBJECT_ID> -DisplayName "Kozbica IT website"
+   New-ManagementScope -Name "Website-mailbox" -RecipientRestrictionFilter "PrimarySmtpAddress -eq 'website@kozbica.nl'"
+   New-ManagementRoleAssignment -App <CLIENT_ID> -Role "Application Mail.Send" -CustomResourceScope "Website-mailbox"
+   Test-ServicePrincipalAuthorization -Identity <CLIENT_ID> -Resource website@kozbica.nl
+   ```
+4. `wrangler.jsonc`: `EMAIL_PROVIDER: "msgraph"`, `MSGRAPH_TENANT_ID`, `MSGRAPH_CLIENT_ID`, `CONTACT_FROM_EMAIL: "website@kozbica.nl"`, `CONTACT_TO_EMAIL: "info@kozbica.nl"`.
+5. `npx wrangler secret put MSGRAPH_CLIENT_SECRET`.
+
+### Option C: Resend (`EMAIL_PROVIDER=resend`)
+
+1. Create an account at resend.com, add your domain and add the DNS records (SPF/DKIM) in Cloudflare DNS.
+2. Create an API key with *sending access* and store it: `npx wrangler secret put RESEND_API_KEY`.
+3. `wrangler.jsonc`: `EMAIL_PROVIDER: "resend"`, `CONTACT_FROM_EMAIL` on the verified domain.
+4. Check Resend's current limits, terms and data location yourself, and name Resend as a processor in the privacy policy.
+
+## 8. Deploy option A: Wrangler CLI
+
+```bash
+npx wrangler login                                   # one-time: authorise in the browser
+npx wrangler secret put TURNSTILE_SECRET_KEY         # plus the secrets for your email provider
+# Fill in .env.production.local (NEXT_PUBLIC_SITE_URL + real Turnstile site key)
+# Fill in wrangler.jsonc vars (CONTACT_TO_EMAIL, CONTACT_FROM_EMAIL, …)
+npm run deploy                                        # = npm run build && wrangler deploy
+```
+
+After the first deploy the site is live at `https://kozbica-it.<your-subdomain>.workers.dev`. Then connect your domain ([section 10](#10-custom-domain-dns-and-https)).
+
+Validate without uploading anything: `npm run build && npm run deploy:dry-run`.
+
+## 9. Deploy option B: Cloudflare dashboard (Workers Builds)
+
+Automatic deploy on every push to GitHub/GitLab:
+
+1. Put this project in a (private) Git repository.
+2. Cloudflare dashboard → **Workers & Pages → Create → Import a repository** → choose the repo.
+3. Settings:
+   - **Project/Worker name:** `kozbica-it` (must match `name` in `wrangler.jsonc`)
+   - **Build command:** `npm run build`
+   - **Deploy command:** `npx wrangler deploy`
+   - **Root directory:** the folder containing `package.json` (e.g. `/` or `/kozbica-it`)
+   - **Build variables:** `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+4. After the first build: **Settings → Variables and Secrets** → add the secrets (`TURNSTILE_SECRET_KEY`, …).
+5. Node version: the build image honours `.nvmrc` (included, version 22).
+
+## 10. Custom domain, DNS and HTTPS
+
+1. **Add the domain to Cloudflare:** dashboard → **Add a domain** → Free plan. Cloudflare imports your existing DNS records. **Check that your MX/SPF/DKIM/autodiscover records for Microsoft 365 were copied correctly.**
+2. **Change the nameservers** at your registrar (e.g. TransIP, Hostnet, Versio) to the two Cloudflare nameservers. Wait until the domain shows as *Active*.
+3. **Connect the Worker:** **Workers & Pages → kozbica-it → Settings → Domains & Routes → Add → Custom Domain** → `kozbica.nl` and `www.kozbica.nl`. Cloudflare creates the DNS records and TLS certificates automatically. (Not possible on a hostname with an existing CNAME record: remove it first.) Alternatively, uncomment the `routes` block in `wrangler.jsonc`.
+4. **One canonical URL:** choose `www` or the root domain (= `NEXT_PUBLIC_SITE_URL`) and redirect the other with **Rules → Redirect Rules** (301), e.g. `kozbica.nl/*` → `https://www.kozbica.nl/${1}`.
+5. **HTTPS:** **SSL/TLS → Edge Certificates** → enable *Always Use HTTPS*, set *Minimum TLS Version* to 1.2, and enable *Automatic HTTPS Rewrites*. The site already sends `Strict-Transport-Security: max-age=31536000` (without `includeSubDomains`/`preload`, deliberately conservative).
+6. **Turnstile:** add the final hostnames to the widget and optionally set `TURNSTILE_ALLOWED_HOSTNAMES`.
+7. Once everything works: set `"workers_dev": false` in `wrangler.jsonc` and deploy again (the workers.dev URL already gets an `X-Robots-Tag: noindex`).
+8. **Search engines:** submit `https://www.kozbica.nl/sitemap.xml` in Google Search Console and Bing Webmaster Tools.
+
+## 11. Before go-live
+
+### 11.1 Placeholders (`src/config/site.ts`)
+
+| Placeholder | Where it appears |
+| --- | --- |
+| `[EMAIL]` | Footer, contact page, privacy policy |
+| `[PHONE]` | Footer, contact page, privacy policy |
+| `[KVK]` | Footer, contact page, privacy policy, terms |
+| `[BTW]` | Footer, contact page |
+| `[ADRES]` | Privacy policy (controller details) |
+
+While a value is still a placeholder, it is shown as plain text (no broken `mailto:`/`tel:` link) and **left out** of the Schema.org data. Once you fill in real values, links and structured data are generated automatically.
+
+### 11.2 Official logo
+
+**The logo file mentioned in the brief was not attached**, so the site uses a **temporary** shield mark plus wordmark in the brand colours. To replace it:
+
+1. Put the logo files in `public/brand/`, e.g. `kozbica-it-logo.svg` (for light backgrounds) and `kozbica-it-logo-wit.svg` (for the dark footer).
+2. In `src/config/site.ts`, set `logo` to:
+   `{ type: "image", src: "/brand/kozbica-it-logo.svg", srcOnDark: "/brand/kozbica-it-logo-wit.svg", width: 180, height: 44 }` (use the real aspect ratio).
+3. Replace `src/app/icon.svg` with the official shield symbol and run `npm run icons` (generates favicon.ico, apple-icon and manifest icons).
+4. Update the shield in `src/components/brand/LogoMark.tsx` (used in the hero illustration) and `src/app/opengraph-image.tsx`.
+5. Check whether the colours in `globals.css` (`@theme`) exactly match the logo, and adjust if needed.
+
+### 11.3 Legal pages (drafts)
+
+- `/privacyverklaring` and `/algemene-voorwaarden` are **careful drafts, not legally reviewed**. They carry a visible draft banner and "Juridisch controleren" markers wherever choices or checks are needed (legal basis, retention periods, processors, liability, notice periods).
+- The terms page is `noindex` and left out of the sitemap while it is a draft.
+- After review by a lawyer, set `site.legal.privacyIsDraft` / `termsIsDraft` to `false`. The banners and markers then disappear automatically. Also update `lastUpdated`.
+- Also consider industry terms for IT companies; check the conditions of use with the relevant trade association.
+
+### 11.4 Content to confirm
+
+The copy deliberately contains **no** invented certifications, customers, reviews, figures, partnerships, years of experience, prices, response times or 24/7 claims. The following points are, however, *business commitments* that you need to confirm or adjust:
+
+- On-site support in Rotterdam/Zuid-Holland "in consultation" (services, FAQ, About).
+- The package contents of IT Basis / Professional / Compleet (`src/content/packages.ts`) and the label "Ons advies voor de meeste teams".
+- FAQ answers on data/account ownership, handover when switching provider, and documentation (`src/content/faq.ts`).
+- The privacy policy's description of your own security measures (MFA etc.).
+
+## 12. Security
+
+- **Server-side validation** in the Worker using the same rules as the browser (`src/lib/contact.ts`): length limits, email/phone format, allowed choices, at most 3 links per message, control characters and invisible direction characters removed, CR/LF removed from header fields (no header injection), and HTML escaped in the email.
+- **Spam:** Turnstile (server-side via Siteverify, optional hostname check, single-use tokens with an idempotency key), hidden honeypot field (bots get a fake "success"), minimum fill time, and at most 20 KB per request.
+- **Rate limiting:** 5 requests per 60 s per IP per Cloudflare location (Workers Rate Limiting binding). Optionally add a WAF rate-limiting rule for `/api/contact` (**Security → WAF → Rate limiting rules**; check what your plan includes).
+- **CSRF:** the API only accepts `POST` with `Content-Type: application/json` and an `Origin` that matches the site. No CORS headers are set.
+- **Content-Security-Policy:** strict, **without `unsafe-inline` for scripts**. Because a static export can't use nonces, `scripts/postbuild.mjs` computes a SHA-256 hash of every inline script per page and adds a CSP `<meta>` tag. The `_headers` file adds `frame-ancestors 'none'`, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `COOP` and `HSTS`. Allowed external source: only `challenges.cloudflare.com` (Turnstile).
+- **Worker responses** carry their own security headers (`Cache-Control: no-store`, `CSP default-src 'none'`, …), because `_headers` doesn't apply to Worker responses.
+- **Logging without personal data:** the Worker only logs event names, the selected service and error codes. No names, email addresses, IP addresses or message content.
+- **Privacy:** fonts are self-hosted (no request to Google during a visit), there are no analytics and no cookies. If you want analytics later, Cloudflare Web Analytics is cookieless. Then add `static.cloudflareinsights.com` to the CSP in `scripts/postbuild.mjs` and update the privacy policy.
+- **`npm audit`:** reports a *high* advisory in `braces` via `eslint-config-next`. That is dev-only lint tooling that never ships to visitors or the Worker. The suggested `npm audit fix --force` would downgrade `eslint-config-next` to v14, so don't run it. Update when Next.js publishes a fix.
+
+## 13. Quality checks and tests
+
+```bash
+npm run check   # lint + typecheck (site and Worker) + tests + production build
+```
+
+| Check | Result during development |
+| --- | --- |
+| `eslint .` (Next.js core-web-vitals + TypeScript + jsx-a11y) | 0 errors, 0 warnings |
+| `tsc` site + `tsc` Worker/tests (strict, `noUncheckedIndexedAccess`) | 0 errors |
+| `vitest run`: 42 tests (validation, Origin/CSRF, rate limit, honeypot, Turnstile, 3 email providers, HTML escaping, headers) | 42/42 passed |
+| `next build` + `postbuild.mjs`: CSP on 9 HTML pages, 508 internal links/anchors checked | passed |
+| `wrangler deploy --dry-run`: config + bundle (Worker 21.6 KiB, 7.2 KiB gzip) | passed |
+| `wrangler dev` (real workerd runtime): all routes, 404 status, 307 redirects, `_headers`, API status codes, rate limit, simulated `send_email` | passed |
+| Playwright (Chromium) at 375/768/1280/1440 px on 8 pages: no horizontal overflow, no console errors, no CSP violations | 32/32 passed |
+| axe-core WCAG 2.0/2.1/2.2 A+AA + best practices, mobile and desktop | 0 violations (16 scans) |
+| Keyboard: skip link, mobile menu (Escape, focus return), form error summary focus, success message focus | passed |
+
+Not tested here: a real deploy to your Cloudflare account, real Turnstile verification (`challenges.cloudflare.com` was unreachable from the build environment) and real email delivery. Use the checklist below after the first deploy.
+
+**Post-deploy checklist**
+
+- [ ] All pages load over `https://` on your own domain; `www`/root redirect works
+- [ ] Contact form: test enquiry arrives; *Reply* goes to the visitor
+- [ ] `https://<domain>/sitemap.xml` and `/robots.txt` show the correct domain
+- [ ] Share preview (e.g. in LinkedIn Post Inspector) shows the OG image
+- [ ] Workers Logs show `contact_sent` with no errors
+
+## 14. Costs and plan limits
+
+- **Static pages:** per Cloudflare's docs, requests to static assets are free and unlimited. Free plan limits: 20,000 files per version and 25 MiB per file; this site has about 100 files.
+- **Worker** (contact form only): Workers Free allows 100,000 requests per day and 10 ms CPU time per request. The contact Worker mostly waits on network I/O, which doesn't count as CPU time.
+- **Email Service to a verified destination address** is free on all plans, per Cloudflare's docs. **Turnstile** has a free tier, and the Rate Limiting binding docs name no plan restriction. Confirm both in your account.
+- **Commercial use:** Vercel's Hobby plan is explicitly limited to non-commercial, personal use, so it doesn't fit this site. To my knowledge, Cloudflare's Free plans have no such restriction, but **I couldn't open Cloudflare's current terms from the build environment.** Check the *Cloudflare Self-Serve Subscription Agreement* yourself. If you need more headroom: Workers Paid costs USD 5/month per account.
+
+## 15. Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Next.js dev server (proxies `/api/*` to `wrangler dev`) |
+| `npm run dev:worker` | Worker locally on port 8787 |
+| `npm run build` | Static export to `./out` + CSP + quality checks |
+| `npm run preview` | Build + full local preview via `wrangler dev` |
+| `npm run deploy` | Build + `wrangler deploy` |
+| `npm run deploy:dry-run` | Validate config and Worker bundle without uploading |
+| `npm run lint` / `typecheck` / `test` | Separate quality checks |
+| `npm run check` | All of the above + build |
+| `npm run icons` | Regenerate favicon/app icons from `src/app/icon.svg` |

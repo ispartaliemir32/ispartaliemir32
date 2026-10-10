@@ -1,0 +1,87 @@
+/**
+ * Cloudflare Workers-configuratie voor kozbica-it.
+ *
+ * Architectuur:
+ *  - De website is een statische Next.js-export in ./out (Workers Static Assets).
+ *    Verzoeken naar statische bestanden zijn gratis en tellen niet mee voor
+ *    het Worker-requestlimiet.
+ *  - Alleen /api/* gaat eerst naar de Worker (worker/index.ts), die het
+ *    contactformulier afhandelt: validatie, Turnstile, rate limiting en e-mail.
+ *
+ * Geheimen (NOOIT in dit bestand zetten) stelt u in met:
+ *   npx wrangler secret put TURNSTILE_SECRET_KEY
+ *   npx wrangler secret put RESEND_API_KEY           (alleen bij EMAIL_PROVIDER=resend)
+ *   npx wrangler secret put MSGRAPH_CLIENT_SECRET    (alleen bij EMAIL_PROVIDER=msgraph)
+ * Zie README.md voor de volledige uitleg.
+ */
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kozbica-it",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+
+  "assets": {
+    "directory": "./out",
+    "binding": "ASSETS",
+    // /diensten -> diensten.html; /diensten/ en /diensten.html -> 307 naar /diensten
+    "html_handling": "auto-trailing-slash",
+    // Onbekende URL's tonen out/404.html met HTTP-status 404
+    "not_found_handling": "404-page",
+    // Alleen API-routes starten de Worker; alle pagina's komen rechtstreeks uit de asset-opslag
+    "run_worker_first": ["/api/*"]
+  },
+
+  // Niet-geheime instellingen. Vul CONTACT_TO_EMAIL en CONTACT_FROM_EMAIL in vóór de eerste deploy.
+  "vars": {
+    // "cloudflare" (Cloudflare Email Service, send_email-binding), "resend" of "msgraph"
+    "EMAIL_PROVIDER": "cloudflare",
+    // Adres waarop u de aanvragen ontvangt. Bij "cloudflare": een geverifieerd bestemmingsadres.
+    "CONTACT_TO_EMAIL": "",
+    // Afzender. Bij "cloudflare"/"resend": adres op een geverifieerd verzenddomein.
+    // Bij "msgraph": de mailbox (UPN) waaruit wordt verstuurd, bijv. website@uwdomein.nl.
+    "CONTACT_FROM_EMAIL": "",
+    "CONTACT_FROM_NAME": "Kozbica IT website",
+    // Optioneel: komma-gescheiden hostnames die Turnstile-tokens mogen afgeven,
+    // bijv. "kozbica.nl,www.kozbica.nl". Leeg = geen extra hostname-controle.
+    "TURNSTILE_ALLOWED_HOSTNAMES": "",
+    // Alleen nodig bij EMAIL_PROVIDER=msgraph (geen geheimen):
+    "MSGRAPH_TENANT_ID": "",
+    "MSGRAPH_CLIENT_ID": ""
+  },
+
+  // Cloudflare Email Service. Versturen naar een geverifieerd bestemmingsadres
+  // is gratis op alle abonnementen. Zie README.md > "E-mail instellen".
+  // Tip: beperk de binding tot uw eigen adres met "destination_address".
+  "send_email": [
+    {
+      "name": "EMAIL"
+      // , "destination_address": "info@uwdomein.nl"
+    }
+  ],
+
+  // Rate limiting voor het contactformulier: max. 5 verzoeken per 60 seconden
+  // per IP-adres per Cloudflare-locatie. namespace_id moet uniek zijn binnen uw account.
+  "ratelimits": [
+    {
+      "name": "CONTACT_RATE_LIMITER",
+      "namespace_id": "4201",
+      "simple": { "limit": 5, "period": 60 }
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  },
+
+  // workers.dev-URL handig om te testen; zet op false zodra uw eigen domein actief is.
+  "workers_dev": true,
+  "preview_urls": false
+
+  // Eigen domein koppelen (domein moet actief zijn in Cloudflare DNS).
+  // Haal de commentaartekens weg en vul uw domein in, of koppel via het dashboard:
+  // Workers & Pages > kozbica-it > Settings > Domains & Routes > Add > Custom Domain.
+  // ,"routes": [
+  //   { "pattern": "uwdomein.nl", "custom_domain": true },
+  //   { "pattern": "www.uwdomein.nl", "custom_domain": true }
+  // ]
+}
