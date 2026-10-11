@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { LegalDocument, Review, type TocItem } from "@/components/legal/LegalDocument";
-import { site } from "@/config/site";
+import { filled, site } from "@/config/site";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -57,8 +57,8 @@ export default function AlgemeneVoorwaardenPage() {
       <h2 id="artikel-1">Artikel 1. Definities</h2>
       <ol>
         <li>
-          <strong>Kozbica IT</strong>: de onderneming Kozbica IT, gevestigd te Rotterdam, ingeschreven bij de Kamer van
-          Koophandel onder nummer {site.contact.kvk}.
+          <strong>Kozbica IT</strong>: de onderneming Kozbica IT, gevestigd te Rotterdam
+          {filled(site.contact.kvk) ? `, ingeschreven bij de Kamer van Koophandel onder nummer ${site.contact.kvk}` : ""}.
         </li>
         <li>
           <strong>Opdrachtgever</strong>: de natuurlijke persoon handelend in de uitoefening van een beroep of bedrijf,

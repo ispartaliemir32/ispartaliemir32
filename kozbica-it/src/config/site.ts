@@ -49,6 +49,15 @@ export function isPlaceholder(value: string): boolean {
   return /^\[[^\]]+\]$/.test(value.trim());
 }
 
+/**
+ * De ingevulde waarde, of `null` zolang het nog een placeholder is.
+ * Niet-ingevulde gegevens worden op de website weggelaten in plaats van als
+ * "[EMAIL]" getoond, zodat de site al live kan voordat alles bekend is.
+ */
+export function filled(value: string): string | null {
+  return isPlaceholder(value) ? null : value;
+}
+
 export function absoluteUrl(path = "/"): string {
   return `${site.url}${path === "/" ? "" : path}`;
 }

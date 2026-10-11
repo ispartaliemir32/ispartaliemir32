@@ -182,6 +182,13 @@ for (const file of allFiles.filter((f) => /\.(html|js|txt|json|css)$/.test(f))) 
 
 if (!existsSync(join(OUT, "404.html"))) warnings.push("out/404.html ontbreekt (404-pagina voor not_found_handling)");
 
+// Bedrijfsgegevens die nog niet zijn ingevuld, horen niet zichtbaar op de site te staan.
+for (const file of htmlFiles) {
+  const visible = readFileSync(file, "utf8").replace(/<script[\s\S]*?<\/script>/gi, "");
+  const found = visible.match(/\[(EMAIL|PHONE|KVK|BTW|ADRES)\]/g);
+  if (found) warnings.push(`${rel(file)} toont nog placeholder(s): ${[...new Set(found)].join(", ")}`);
+}
+
 // ---------------------------------------------------------------------------
 for (const w of warnings) console.warn(`⚠ ${w}`);
 if (errors.length > 0) {

@@ -3,7 +3,7 @@ import { ContactForm } from "@/components/contact/ContactForm";
 import { ContactValue } from "@/components/ui/ContactValue";
 import { Container } from "@/components/ui/Container";
 import { PageHero } from "@/components/ui/PageHero";
-import { isPlaceholder, site } from "@/config/site";
+import { filled, site } from "@/config/site";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -27,7 +27,10 @@ const steps = [
 ];
 
 export default function ContactPage() {
-  const { email, phone, kvk, btw } = site.contact;
+  const email = filled(site.contact.email);
+  const phone = filled(site.contact.phone);
+  const kvk = filled(site.contact.kvk);
+  const btw = filled(site.contact.btw);
   return (
     <>
       <PageHero
@@ -41,10 +44,10 @@ export default function ContactPage() {
         <Container>
           <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
             <div className="lg:col-span-7">
-              <ContactForm siteKey={TURNSTILE_SITE_KEY} directEmail={isPlaceholder(email) ? null : email} />
+              <ContactForm siteKey={TURNSTILE_SITE_KEY} directEmail={email} />
               <noscript>
                 <p className="mt-4 rounded-2xl bg-warning-50 p-4 text-warning-800 ring-1 ring-warning-200">
-                  Voor het contactformulier is JavaScript nodig. U kunt ons ook rechtstreeks mailen op {email}.
+                  Voor het contactformulier is JavaScript nodig.{email && ` U kunt ons ook rechtstreeks mailen op ${email}.`}
                 </p>
               </noscript>
             </div>
@@ -83,37 +86,51 @@ export default function ContactPage() {
                       <span className="block text-sm text-muted">Op locatie in Zuid-Holland, op afstand in heel Nederland</span>
                     </dd>
                   </div>
-                  <div className="flex gap-3">
-                    <dt className="flex items-center">
-                      <Mail aria-hidden="true" className="size-5 text-turquoise-700" />
-                      <span className="sr-only">E-mail</span>
-                    </dt>
-                    <dd>
-                      <ContactValue type="email" value={email} className="font-medium text-navy-900" />
-                    </dd>
-                  </div>
-                  <div className="flex gap-3">
-                    <dt className="flex items-center">
-                      <Phone aria-hidden="true" className="size-5 text-turquoise-700" />
-                      <span className="sr-only">Telefoon</span>
-                    </dt>
-                    <dd>
-                      <ContactValue type="phone" value={phone} className="font-medium text-navy-900" />
-                    </dd>
-                  </div>
+                  {email && (
+                    <div className="flex gap-3">
+                      <dt className="flex items-center">
+                        <Mail aria-hidden="true" className="size-5 text-turquoise-700" />
+                        <span className="sr-only">E-mail</span>
+                      </dt>
+                      <dd>
+                        <ContactValue type="email" value={email} className="font-medium text-navy-900" />
+                      </dd>
+                    </div>
+                  )}
+                  {phone && (
+                    <div className="flex gap-3">
+                      <dt className="flex items-center">
+                        <Phone aria-hidden="true" className="size-5 text-turquoise-700" />
+                        <span className="sr-only">Telefoon</span>
+                      </dt>
+                      <dd>
+                        <ContactValue type="phone" value={phone} className="font-medium text-navy-900" />
+                      </dd>
+                    </div>
+                  )}
                 </dl>
-                <dl className="mt-6 grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2.5 border-t border-line pt-5 text-sm text-muted">
-                  <dt className="flex items-center gap-2">
-                    <Building2 aria-hidden="true" className="size-4" />
-                    KvK-nummer
-                  </dt>
-                  <dd className="font-mono text-navy-900">{kvk}</dd>
-                  <dt className="flex items-center gap-2">
-                    <Receipt aria-hidden="true" className="size-4" />
-                    Btw-id
-                  </dt>
-                  <dd className="font-mono text-navy-900">{btw}</dd>
-                </dl>
+                {(kvk || btw) && (
+                  <dl className="mt-6 grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2.5 border-t border-line pt-5 text-sm text-muted">
+                    {kvk && (
+                      <>
+                        <dt className="flex items-center gap-2">
+                          <Building2 aria-hidden="true" className="size-4" />
+                          KvK-nummer
+                        </dt>
+                        <dd className="font-mono text-navy-900">{kvk}</dd>
+                      </>
+                    )}
+                    {btw && (
+                      <>
+                        <dt className="flex items-center gap-2">
+                          <Receipt aria-hidden="true" className="size-4" />
+                          Btw-id
+                        </dt>
+                        <dd className="font-mono text-navy-900">{btw}</dd>
+                      </>
+                    )}
+                  </dl>
+                )}
               </div>
 
               <p className="flex gap-3 text-sm leading-relaxed text-muted">

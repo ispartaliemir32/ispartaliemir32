@@ -4,6 +4,8 @@ Production-ready website for **Kozbica IT** (Rotterdam), a Dutch B2B IT services
 
 All customer-facing content is in Dutch. This README is the technical handbook: installation, configuration, deployment, custom domain, and what still needs your input.
 
+> **Go-live for kozbica.nl:** follow the short Dutch checklist in [`LIVEGANG.md`](LIVEGANG.md) (domain at STRATO, hosting on Cloudflare, no business email yet).
+
 ---
 
 ## Contents

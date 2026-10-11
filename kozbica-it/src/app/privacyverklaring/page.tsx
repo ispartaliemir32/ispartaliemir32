@@ -1,5 +1,6 @@
 import { LegalDocument, Review, type TocItem } from "@/components/legal/LegalDocument";
-import { site } from "@/config/site";
+import Link from "next/link";
+import { filled, site } from "@/config/site";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
@@ -27,7 +28,16 @@ const toc: TocItem[] = [
 
 export default function PrivacyPage() {
   const draft = site.legal.privacyIsDraft;
-  const { email, address, kvk, phone } = site.contact;
+  const email = filled(site.contact.email);
+  const address = filled(site.contact.address);
+  const kvk = filled(site.contact.kvk);
+  const phone = filled(site.contact.phone);
+  // Zolang er geen zakelijk e-mailadres is, verwijzen we naar het contactformulier.
+  const reachUs = email ?? (
+    <>
+      het <Link href="/contact">contactformulier</Link>
+    </>
+  );
 
   return (
     <LegalDocument
@@ -58,21 +68,25 @@ export default function PrivacyPage() {
             <td>{site.legalName}</td>
           </tr>
           <tr>
-            <th scope="row">Vestigingsadres</th>
-            <td>{address}, Rotterdam</td>
+            <th scope="row">Vestigingsplaats</th>
+            <td>{address ? `${address}, Rotterdam` : "Rotterdam"}</td>
           </tr>
+          {kvk && (
+            <tr>
+              <th scope="row">KvK-nummer</th>
+              <td>{kvk}</td>
+            </tr>
+          )}
           <tr>
-            <th scope="row">KvK-nummer</th>
-            <td>{kvk}</td>
+            <th scope="row">Contact</th>
+            <td>{reachUs}</td>
           </tr>
-          <tr>
-            <th scope="row">E-mail</th>
-            <td>{email}</td>
-          </tr>
-          <tr>
-            <th scope="row">Telefoon</th>
-            <td>{phone}</td>
-          </tr>
+          {phone && (
+            <tr>
+              <th scope="row">Telefoon</th>
+              <td>{phone}</td>
+            </tr>
+          )}
         </tbody>
       </table>
       <p>
@@ -261,7 +275,7 @@ export default function PrivacyPage() {
         <li>recht om gegeven toestemming in te trekken, zonder dat dit afbreuk doet aan eerdere verwerking.</li>
       </ul>
       <p>
-        U kunt een verzoek sturen naar {email}. Wij reageren binnen één maand. Bij complexe verzoeken kan deze termijn
+        U kunt een verzoek sturen via {reachUs}. Wij reageren binnen één maand. Bij complexe verzoeken kan deze termijn
         met twee maanden worden verlengd; dat laten wij u dan tijdig weten. Om misbruik te voorkomen, kunnen wij u vragen
         uw identiteit te bevestigen.
       </p>
@@ -284,8 +298,13 @@ export default function PrivacyPage() {
 
       <h2 id="contact">13. Contact</h2>
       <p>
-        Vragen over deze privacyverklaring of over uw gegevens? Neem contact op via {email} of schrijf naar {site.legalName},{" "}
-        {address}, Rotterdam.
+        Vragen over deze privacyverklaring of over uw gegevens? Neem contact op via {reachUs}
+        {address && (
+          <>
+            {" "}of schrijf naar {site.legalName}, {address}, Rotterdam
+          </>
+        )}
+        .
       </p>
     </LegalDocument>
   );

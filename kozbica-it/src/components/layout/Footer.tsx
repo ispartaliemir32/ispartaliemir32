@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, MessageSquareText, Phone } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ContactValue } from "@/components/ui/ContactValue";
 import { Container } from "@/components/ui/Container";
-import { site } from "@/config/site";
+import { filled, site } from "@/config/site";
 import { legalNav, mainNav } from "@/content/navigation";
 import { services } from "@/content/services";
 import { CurrentYear } from "./CurrentYear";
@@ -11,6 +11,10 @@ import { CurrentYear } from "./CurrentYear";
 const linkClass = "rounded text-white/70 transition-colors hover:text-white hover:underline underline-offset-4";
 
 export function Footer() {
+  const email = filled(site.contact.email);
+  const phone = filled(site.contact.phone);
+  const kvk = filled(site.contact.kvk);
+  const btw = filled(site.contact.btw);
   return (
     <footer className="no-print relative overflow-hidden bg-navy-950 text-white" aria-labelledby="footer-titel">
       <h2 id="footer-titel" className="sr-only">
@@ -66,23 +70,45 @@ export function Footer() {
           <div className="lg:col-span-3">
             <h3 className="text-sm font-semibold tracking-wide text-white uppercase">Contact</h3>
             <ul className="mt-5 space-y-3 text-[0.9375rem] text-white/70">
-              <li className="flex items-center gap-2.5">
-                <Mail aria-hidden="true" className="size-4 shrink-0 text-turquoise-400" />
-                <span className="sr-only">E-mail:</span>
-                <ContactValue type="email" value={site.contact.email} className="text-white/85" />
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Phone aria-hidden="true" className="size-4 shrink-0 text-turquoise-400" />
-                <span className="sr-only">Telefoon:</span>
-                <ContactValue type="phone" value={site.contact.phone} className="text-white/85" />
-              </li>
+              {email && (
+                <li className="flex items-center gap-2.5">
+                  <Mail aria-hidden="true" className="size-4 shrink-0 text-turquoise-400" />
+                  <span className="sr-only">E-mail:</span>
+                  <ContactValue type="email" value={email} className="text-white/85" />
+                </li>
+              )}
+              {phone && (
+                <li className="flex items-center gap-2.5">
+                  <Phone aria-hidden="true" className="size-4 shrink-0 text-turquoise-400" />
+                  <span className="sr-only">Telefoon:</span>
+                  <ContactValue type="phone" value={phone} className="text-white/85" />
+                </li>
+              )}
+              {!email && !phone && (
+                <li className="flex items-center gap-2.5">
+                  <MessageSquareText aria-hidden="true" className="size-4 shrink-0 text-turquoise-400" />
+                  <Link href="/contact" className={linkClass}>
+                    Via het contactformulier
+                  </Link>
+                </li>
+              )}
             </ul>
-            <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm text-white/60">
-              <dt>KvK</dt>
-              <dd className="font-mono">{site.contact.kvk}</dd>
-              <dt>Btw-id</dt>
-              <dd className="font-mono">{site.contact.btw}</dd>
-            </dl>
+            {(kvk || btw) && (
+              <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-sm text-white/60">
+                {kvk && (
+                  <>
+                    <dt>KvK</dt>
+                    <dd className="font-mono">{kvk}</dd>
+                  </>
+                )}
+                {btw && (
+                  <>
+                    <dt>Btw-id</dt>
+                    <dd className="font-mono">{btw}</dd>
+                  </>
+                )}
+              </dl>
+            )}
             <Link
               href="/contact"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-turquoise-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-turquoise-700"

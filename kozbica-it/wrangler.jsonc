@@ -39,7 +39,7 @@
     "CONTACT_TO_EMAIL": "",
     // Afzender. Bij "cloudflare"/"resend": adres op een geverifieerd verzenddomein.
     // Bij "msgraph": de mailbox (UPN) waaruit wordt verstuurd, bijv. website@uwdomein.nl.
-    "CONTACT_FROM_EMAIL": "",
+    "CONTACT_FROM_EMAIL": "website@kozbica.nl",
     "CONTACT_FROM_NAME": "Kozbica IT website",
     // Optioneel: komma-gescheiden hostnames die Turnstile-tokens mogen afgeven,
     // bijv. "kozbica.nl,www.kozbica.nl". Leeg = geen extra hostname-controle.
