@@ -1,4 +1,5 @@
 import { Hero } from "@/components/home/Hero";
+import { Certifications } from "@/components/sections/Certifications";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Faq } from "@/components/sections/Faq";
 import { Process } from "@/components/sections/Process";
@@ -20,6 +21,7 @@ export default function HomePage() {
   return (
     <>
       <Hero />
+      <Certifications />
       <ServicesGrid />
       <WhyUs />
       <Process />

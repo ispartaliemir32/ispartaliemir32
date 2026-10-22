@@ -90,8 +90,8 @@ export function Footer() {
           </Link>
         </div>
         <p className="mt-5 max-w-3xl text-xs leading-relaxed text-white/60">
-          Microsoft, Microsoft 365, Copilot, Entra en Intune zijn handelsmerken van de Microsoft-groep. Kozbica IT is een
-          onafhankelijke IT-dienstverlener; het noemen van deze producten impliceert geen partnerschap of goedkeuring.
+          Microsoft, Microsoft 365, Azure, Copilot, Entra en Intune zijn handelsmerken van de Microsoft-groep. Kozbica IT is een
+          onafhankelijke IT-dienstverlener; het noemen van deze producten impliceert geen partnerschap of goedkeuring door Microsoft.
         </p>
       </Container>
     </footer>

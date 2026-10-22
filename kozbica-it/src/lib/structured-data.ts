@@ -16,6 +16,7 @@ export function organizationSchema() {
     image: absoluteUrl("/opengraph-image"),
     description: site.description,
     slogan: site.slogan,
+    founder: { "@type": "Person", name: "Emir Mustafa Bıçakçı", jobTitle: "Systeembeheerder en IT-supportspecialist" },
     email,
     telephone: phoneHref,
     address: { "@type": "PostalAddress", addressLocality: site.city, addressCountry: "NL" },

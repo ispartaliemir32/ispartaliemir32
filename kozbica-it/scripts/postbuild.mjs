@@ -114,8 +114,8 @@ for (const file of htmlFiles) {
 // --- 2b. Inhoud: niets vermelden wat Kozbica IT niet doet ---------------------
 const VERBODEN = [
   /softwareontwikkel/i, /programmeer/i, /\bprogrammeren\b/i, /\bAPI'?s?\b/, /koppeling/i, /integratie/i,
-  /requirements/i, /specificatie/i, /projectleid/i, /\bhosting/i, /serverbeheer/i, /\bcloud/i, /\bAzure\b/,
-  /bekabeling/i, /hardware/i, /inkoop/i, /inkopen/i, /\bISO\b/, /\bNIS2\b/i, /compliance/i, /certificer/i, /certificat/i,
+  /requirements/i, /specificatie/i, /projectleid/i, /\bhosting/i, /serverbeheer/i, /cloudbeheer/i, /cloudinfrastructuur/i, /cloudoplossing/i, /cloudmigratie/i,
+  /bekabeling/i, /hardware/i, /inkoop/i, /inkopen/i, /\bISO\b/, /\bNIS2\b/i, /compliance/i,
   /24\/7/, /\bspoed/i, /\bSLA\b/, /hersteltijd/i, /garantie/i, /\bklantlogo/i, /\breview/i, /testimonial/i,
 ];
 for (const file of htmlFiles) {
