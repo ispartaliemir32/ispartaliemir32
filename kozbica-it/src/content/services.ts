@@ -1,7 +1,7 @@
-import { Headset, Lightbulb, AppWindow, type LucideIcon } from "lucide-react";
+import { Headset, Lightbulb, AppWindow, Sparkles, type LucideIcon } from "lucide-react";
 
 export type Service = {
-  slug: "it-ondersteuning" | "applicatiebeheer" | "it-advies";
+  slug: "it-ondersteuning" | "applicatiebeheer" | "it-advies" | "ai-ondersteuning";
   title: string;
   icon: LucideIcon;
   summary: string;
@@ -86,6 +86,30 @@ export const services: Service[] = [
     ],
     idealFor: "Ondernemers die een keuze moeten maken en een second opinion willen.",
     cta: "Stuur een vraag over IT-advies",
+    rate: "€ 75 per uur",
+  },
+  {
+    slug: "ai-ondersteuning",
+    title: "AI-ondersteuning",
+    icon: Sparkles,
+    summary:
+      "Advies over AI-tools die bij je bedrijf passen, en het inrichten en beheren ervan binnen Microsoft 365.",
+    intro:
+      "AI kan je dagelijks werk sneller maken, maar welke tool past bij jou, en hoe gebruik je die veilig? Ik adviseer onafhankelijk en help je daarna om AI-tools goed in te richten, zodat de juiste mensen er toegang toe hebben.",
+    includes: [
+      "Vrijblijvend advies over AI-tools, zoals Microsoft Copilot, en wat ze voor je bedrijf kunnen betekenen",
+      "Advies over veilig gebruik: welke gegevens wel en niet in AI-tools thuishoren",
+      "Inrichten van AI-tools: licenties, gebruikers en rechten in Microsoft 365",
+      "Beheer van die AI-tools, inclusief storingen en vragen van collega's",
+    ],
+    benefits: [
+      "Een eerlijk beeld van wat AI wel en niet voor je doet",
+      "Je beslist zelf over aanschaf en je betaalt niet voor licenties die niemand gebruikt",
+      "AI-tools staan veilig ingesteld, met de juiste toegang voor de juiste mensen",
+      "Uitleg in gewone taal, zonder hype",
+    ],
+    idealFor: "Ondernemers die AI willen gebruiken, maar niet weten waar te beginnen.",
+    cta: "Stuur een vraag over AI",
     rate: "€ 75 per uur",
   },
 ];

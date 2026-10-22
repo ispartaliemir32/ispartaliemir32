@@ -11,7 +11,7 @@ import { pageMetadata } from "@/lib/metadata";
 export const metadata = pageMetadata({
   title: "Veilige IT, zonder gedoe | IT-ondersteuning in Rotterdam",
   description:
-    "Persoonlijke IT-ondersteuning voor kleine bedrijven in Rotterdam en omgeving: Microsoft 365, Entra ID en Intune, applicatiebeheer en IT-advies. Duidelijke tarieven, reactie binnen 1 werkdag.",
+    "Persoonlijke IT-ondersteuning voor kleine bedrijven in Rotterdam en omgeving: Microsoft 365, Entra ID en Intune, applicatiebeheer, IT-advies en AI-ondersteuning. Duidelijke tarieven, reactie binnen 1 werkdag.",
   path: "/",
   absoluteTitle: true,
 });

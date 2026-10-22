@@ -44,7 +44,7 @@ export default async function OpengraphImage() {
             zonder gedoe.
           </div>
           <div style={{ marginTop: 30, fontSize: 30, fontWeight: 600, color: "rgba(255,255,255,0.78)" }}>
-            IT-ondersteuning · Applicatiebeheer · IT-advies
+            IT-ondersteuning · Applicatiebeheer · IT-advies · AI
           </div>
         </div>
 

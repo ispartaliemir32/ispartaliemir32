@@ -27,6 +27,11 @@ export const homeFaq: FaqItem[] = [
       "Het meeste kan veilig op afstand. Werk op locatie is mogelijk na afspraak. Reistijd telt dan als werktijd, plus € 0,23 per km.",
   },
   {
+    question: "Kun je me helpen met AI, zoals Microsoft Copilot?",
+    answer:
+      "Ja. Ik adviseer welke AI-tools bij je bedrijf passen en hoe je ze veilig gebruikt. Daarna kan ik ze voor je inrichten en beheren binnen Microsoft 365. Het advies is vrijblijvend en jij beslist zelf over aanschaf. AI-ondersteuning kost € 75 per uur.",
+  },
+  {
     question: "Kan ik zomaar advies vragen?",
     answer:
       "Ja. IT-advies is vrijblijvend. Ik vertel wat ik zou doen en waarom, en jij beslist zelf over aanschaf.",

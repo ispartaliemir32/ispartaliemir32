@@ -11,10 +11,10 @@ export function ServicesGrid() {
         id="diensten-titel"
         eyebrow="Diensten"
         title="Waar ik je mee help"
-        intro="Drie diensten, helder omschreven. Zo weet je precies wat je van me kunt verwachten."
+        intro="Vier diensten, helder omschreven. Zo weet je precies wat je van me kunt verwachten."
       />
 
-      <ul className="mt-12 grid gap-5 lg:grid-cols-3">
+      <ul className="mt-12 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         {services.map((service) => (
           <li
             key={service.slug}

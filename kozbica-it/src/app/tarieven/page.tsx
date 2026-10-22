@@ -10,7 +10,7 @@ import { pageMetadata } from "@/lib/metadata";
 export const metadata = pageMetadata({
   title: "Tarieven: € 60 per uur, per kwartier afgerekend",
   description:
-    "Duidelijke tarieven voor IT-ondersteuning, applicatiebeheer en IT-advies. Per kwartier afgerekend, urenbundel van 10 uur voor € 550. Alle tarieven exclusief btw.",
+    "Duidelijke tarieven voor IT-ondersteuning, applicatiebeheer, IT-advies en AI-ondersteuning. Per kwartier afgerekend, urenbundel van 10 uur voor € 550. Alle tarieven exclusief btw.",
   path: "/tarieven/",
 });
 

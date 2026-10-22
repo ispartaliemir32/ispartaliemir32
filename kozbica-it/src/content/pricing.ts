@@ -16,10 +16,10 @@ export const rates: Rate[] = [
     description: "Voor storingen, beheer van gebruikers en licenties, werkplekken en je bedrijfsapplicaties.",
   },
   {
-    name: "IT-advies",
+    name: "IT-advies en AI-ondersteuning",
     price: "€ 75",
     unit: "per uur",
-    description: "Vrijblijvend advies over licenties, beveiliging en werkplekinrichting.",
+    description: "Vrijblijvend advies over licenties, beveiliging, werkplekinrichting en AI-tools, plus het inrichten en beheren van AI-tools.",
   },
   {
     name: "Urenbundel van 10 uur",
@@ -40,5 +40,5 @@ export const conditions = [
 export const examples = [
   { what: "Een snelle vraag van 30 minuten", cost: "€ 30" },
   { what: "Een storing van 45 minuten", cost: "€ 45" },
-  { what: "Een uur advies over je licenties", cost: "€ 75" },
+  { what: "Een uur advies over je licenties of AI-tools", cost: "€ 75" },
 ];

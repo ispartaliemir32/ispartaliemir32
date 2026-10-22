@@ -14,9 +14,9 @@ import { pageMetadata } from "@/lib/metadata";
 import { servicesSchema } from "@/lib/structured-data";
 
 export const metadata = pageMetadata({
-  title: "Diensten: IT-ondersteuning, applicatiebeheer en IT-advies",
+  title: "Diensten: IT-ondersteuning, applicatiebeheer, IT-advies en AI",
   description:
-    "IT-ondersteuning met Microsoft 365, Entra ID en Intune, applicatiebeheer en vrijblijvend IT-advies voor kleine bedrijven in Rotterdam en omgeving.",
+    "IT-ondersteuning met Microsoft 365, Entra ID en Intune, applicatiebeheer, vrijblijvend IT-advies en AI-ondersteuning voor kleine bedrijven in Rotterdam en omgeving.",
   path: "/diensten/",
 });
 
@@ -26,7 +26,7 @@ export default function DienstenPage() {
       <PageHero
         eyebrow="Diensten"
         title="Waar ik je mee help"
-        intro="Drie diensten, in gewone taal uitgelegd. Per dienst lees je wat ik doe, wat het je oplevert en wat het kost."
+        intro="Vier diensten, in gewone taal uitgelegd. Per dienst lees je wat ik doe, wat het je oplevert en wat het kost."
         crumbs={[{ name: "Diensten", path: "/diensten/" }]}
       >
         <nav aria-label="Diensten op deze pagina">
