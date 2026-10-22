@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { Section, SectionHeader } from "@/components/ui/Section";
+import { mailHref } from "@/config/site";
 import { JsonLd } from "@/components/seo/JsonLd";
 import type { FaqItem } from "@/content/faq";
 import { faqSchema } from "@/lib/structured-data";
@@ -30,7 +31,7 @@ export function FaqList({ items }: { items: FaqItem[] }) {
 export function Faq({
   items,
   title = "Veelgestelde vragen",
-  intro = "Staat uw vraag er niet tussen? Neem gerust contact op, dan denken we vrijblijvend met u mee.",
+  intro = "Staat je vraag er niet tussen? Stuur me gerust een e-mail.",
   tone = "white",
 }: {
   items: FaqItem[];
@@ -44,8 +45,8 @@ export function Faq({
         <div className="lg:col-span-4">
           <SectionHeader id="faq-titel" eyebrow="FAQ" title={title} intro={intro} />
           <div className="mt-8">
-            <ButtonLink href="/contact" variant="secondary" withArrow>
-              Stel uw vraag
+            <ButtonLink href={mailHref("Vraag via kozbica.nl")} variant="secondary">
+              Stel je vraag
             </ButtonLink>
           </div>
         </div>

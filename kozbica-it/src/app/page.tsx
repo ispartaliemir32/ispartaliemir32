@@ -1,18 +1,17 @@
 import { Hero } from "@/components/home/Hero";
 import { CtaBanner } from "@/components/sections/CtaBanner";
 import { Faq } from "@/components/sections/Faq";
-import { PackagesPreview } from "@/components/sections/PackagesPreview";
 import { Process } from "@/components/sections/Process";
-import { SecuritySection } from "@/components/sections/SecuritySection";
+import { RatesPreview } from "@/components/sections/RatesPreview";
 import { ServicesGrid } from "@/components/sections/ServicesGrid";
 import { WhyUs } from "@/components/sections/WhyUs";
 import { homeFaq } from "@/content/faq";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
-  title: "IT-beheer voor het MKB in Rotterdam | Kozbica IT",
+  title: "Veilige IT, zonder gedoe | IT-ondersteuning in Rotterdam",
   description:
-    "Kozbica IT is uw externe IT-partner uit Rotterdam: IT-beheer, Microsoft 365, cloud en cybersecurity voor MKB-bedrijven met 5–30 medewerkers. Plan een gratis kennismaking.",
+    "Persoonlijke IT-ondersteuning voor kleine bedrijven in Rotterdam en omgeving: Microsoft 365, Entra ID en Intune, applicatiebeheer en IT-advies. Duidelijke tarieven, reactie binnen 1 werkdag.",
   path: "/",
   absoluteTitle: true,
 });
@@ -24,8 +23,7 @@ export default function HomePage() {
       <ServicesGrid />
       <WhyUs />
       <Process />
-      <PackagesPreview />
-      <SecuritySection />
+      <RatesPreview />
       <Faq items={homeFaq} />
       <CtaBanner />
     </>

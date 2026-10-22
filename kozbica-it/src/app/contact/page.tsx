@@ -1,143 +1,90 @@
-import { Building2, FileText, Mail, MapPin, Phone, Receipt } from "lucide-react";
-import { ContactForm } from "@/components/contact/ContactForm";
-import { ContactValue } from "@/components/ui/ContactValue";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { IconBadge } from "@/components/ui/IconBadge";
 import { PageHero } from "@/components/ui/PageHero";
-import { filled, site } from "@/config/site";
+import { CheckList } from "@/components/ui/CheckList";
+import { isPlaceholder, mailHref, phoneHref, site } from "@/config/site";
 import { pageMetadata } from "@/lib/metadata";
 
 export const metadata = pageMetadata({
-  title: "Contact en gratis kennismaking",
+  title: "Contact: stuur een e-mail of bel",
   description:
-    "Neem contact op met Kozbica IT in Rotterdam. Plan een gratis, vrijblijvende kennismaking over IT-beheer, Microsoft 365, cloud of cybersecurity voor uw bedrijf.",
-  path: "/contact",
+    "Neem contact op met Kozbica IT in Rotterdam. Stuur een e-mail of bel. Ik reageer binnen 1 werkdag.",
+  path: "/contact/",
 });
 
-// Publieke Turnstile site key; wordt tijdens de build in de pagina opgenomen.
-// Zonder configuratie (alleen lokaal) valt hij terug op de officiële testsleutel.
-const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
-
-const steps = [
-  { title: "We nemen contact op", text: "U hoort persoonlijk van ons om een moment voor de kennismaking af te spreken." },
-  {
-    title: "Kennismaking",
-    text: "We bespreken uw bedrijf, uw IT en uw wensen: telefonisch, online of in de regio Rotterdam op locatie.",
-  },
-  { title: "Voorstel op maat", text: "Is er een match? Dan ontvangt u een helder voorstel. U zit nergens aan vast." },
+const tips = [
+  "Je naam en bedrijf",
+  "Waar je tegenaan loopt, in je eigen woorden",
+  "Over welke applicatie of welk apparaat het gaat",
+  "Wanneer je mij kunt bereiken",
 ];
 
 export default function ContactPage() {
-  const email = filled(site.contact.email);
-  const phone = filled(site.contact.phone);
-  const kvk = filled(site.contact.kvk);
-  const btw = filled(site.contact.btw);
+  const { email, phone, kvk } = site.contact;
   return (
     <>
       <PageHero
         eyebrow="Contact"
-        title="Plan een gratis kennismaking"
-        intro="Vertel ons kort over uw bedrijf en uw IT-vraag. We denken vrijblijvend met u mee en laten u weten hoe we kunnen helpen."
-        crumbs={[{ name: "Contact", path: "/contact" }]}
+        title="Mail of bel mij"
+        intro="Geen formulier, geen wachtrij. Stuur je vraag per e-mail, dan reageer ik binnen 1 werkdag. Liever bellen? Dat kan ook."
+        crumbs={[{ name: "Contact", path: "/contact/" }]}
       />
 
-      <section aria-label="Contactformulier en gegevens" className="bg-white py-16 sm:py-20 lg:py-24">
+      <section aria-label="Contactgegevens" className="bg-white py-16 sm:py-20 lg:py-24">
         <Container>
-          <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
-            <div className="lg:col-span-7">
-              <ContactForm siteKey={TURNSTILE_SITE_KEY} directEmail={email} />
-              <noscript>
-                <p className="mt-4 rounded-2xl bg-warning-50 p-4 text-warning-800 ring-1 ring-warning-200">
-                  Voor het contactformulier is JavaScript nodig.{email && ` U kunt ons ook rechtstreeks mailen op ${email}.`}
-                </p>
-              </noscript>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="flex flex-col rounded-card bg-white p-8 shadow-card ring-1 ring-line">
+              <IconBadge icon={Mail} />
+              <h2 className="mt-6 text-2xl font-bold">E-mail</h2>
+              <p className="mt-2 text-muted">De beste manier. Ik reageer binnen 1 werkdag.</p>
+              <p className="mt-4 text-lg font-semibold break-all text-navy-900">{email}</p>
+              <ButtonLink href={mailHref("Vraag via kozbica.nl")} size="lg" className="mt-6 w-full sm:w-fit">
+                <Mail aria-hidden="true" className="size-5" />
+                Stuur een e-mail
+              </ButtonLink>
             </div>
 
-            <div className="space-y-8 lg:col-span-5">
-              <div>
-                <h2 className="text-2xl font-bold">Wat kunt u verwachten?</h2>
-                <ol className="mt-6 space-y-6">
-                  {steps.map((step, index) => (
-                    <li key={step.title} className="flex gap-4">
-                      <span
-                        aria-hidden="true"
-                        className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-navy-900 text-sm font-bold text-turquoise-300"
-                      >
-                        {index + 1}
-                      </span>
-                      <div>
-                        <h3 className="font-bold">{step.title}</h3>
-                        <p className="mt-1 leading-relaxed text-muted">{step.text}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+            <div className="flex flex-col rounded-card bg-white p-8 shadow-card ring-1 ring-line">
+              <IconBadge icon={Phone} />
+              <h2 className="mt-6 text-2xl font-bold">Telefoon</h2>
+              <p className="mt-2 text-muted">Voor een korte vraag. Mail je liever eerst, dan kan ik me voorbereiden.</p>
+              <p className="mt-4 text-lg font-semibold text-navy-900">{phone}</p>
+              <ButtonLink href={phoneHref} variant="secondary" size="lg" className="mt-6 w-full sm:w-fit">
+                <Phone aria-hidden="true" className="size-5" />
+                Bel {phone}
+              </ButtonLink>
+            </div>
+          </div>
 
-              <div className="rounded-card bg-mist p-7 ring-1 ring-line">
-                <h2 className="text-lg font-bold">Contactgegevens</h2>
-                <dl className="mt-5 space-y-4 text-[0.9375rem]">
-                  <div className="flex gap-3">
-                    <dt className="flex items-center">
-                      <MapPin aria-hidden="true" className="size-5 text-turquoise-700" />
-                      <span className="sr-only">Locatie</span>
-                    </dt>
-                    <dd>
-                      {site.location.city}, {site.location.country}
-                      <span className="block text-sm text-muted">Op locatie in Zuid-Holland, op afstand in heel Nederland</span>
-                    </dd>
-                  </div>
-                  {email && (
-                    <div className="flex gap-3">
-                      <dt className="flex items-center">
-                        <Mail aria-hidden="true" className="size-5 text-turquoise-700" />
-                        <span className="sr-only">E-mail</span>
-                      </dt>
-                      <dd>
-                        <ContactValue type="email" value={email} className="font-medium text-navy-900" />
-                      </dd>
-                    </div>
-                  )}
-                  {phone && (
-                    <div className="flex gap-3">
-                      <dt className="flex items-center">
-                        <Phone aria-hidden="true" className="size-5 text-turquoise-700" />
-                        <span className="sr-only">Telefoon</span>
-                      </dt>
-                      <dd>
-                        <ContactValue type="phone" value={phone} className="font-medium text-navy-900" />
-                      </dd>
-                    </div>
-                  )}
-                </dl>
-                {(kvk || btw) && (
-                  <dl className="mt-6 grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-2.5 border-t border-line pt-5 text-sm text-muted">
-                    {kvk && (
-                      <>
-                        <dt className="flex items-center gap-2">
-                          <Building2 aria-hidden="true" className="size-4" />
-                          KvK-nummer
-                        </dt>
-                        <dd className="font-mono text-navy-900">{kvk}</dd>
-                      </>
-                    )}
-                    {btw && (
-                      <>
-                        <dt className="flex items-center gap-2">
-                          <Receipt aria-hidden="true" className="size-4" />
-                          Btw-id
-                        </dt>
-                        <dd className="font-mono text-navy-900">{btw}</dd>
-                      </>
-                    )}
-                  </dl>
+          <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <h2 className="text-2xl font-bold">Wat kun je in je mail zetten?</h2>
+              <p className="mt-3 text-muted">Hoe duidelijker je vraag, hoe sneller ik kan helpen.</p>
+              <CheckList items={tips} className="mt-5" />
+            </div>
+            <div className="rounded-card bg-mist p-7 ring-1 ring-line">
+              <h2 className="text-lg font-bold">Goed om te weten</h2>
+              <ul className="mt-5 space-y-4 text-[0.9375rem]">
+                <li className="flex gap-3">
+                  <MapPin aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-turquoise-700" />
+                  <span>
+                    <span className="font-semibold">{site.serviceArea}.</span> Het meeste doe ik op afstand, op locatie
+                    kan na afspraak.
+                  </span>
+                </li>
+                <li className="flex gap-3">
+                  <Clock aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-turquoise-700" />
+                  <span>Ik reageer binnen 1 werkdag.</span>
+                </li>
+                {!isPlaceholder(kvk) && (
+                  <li className="flex gap-3 text-muted">
+                    <span className="size-5 shrink-0" aria-hidden="true" />
+                    <span>KvK {kvk}</span>
+                  </li>
                 )}
-              </div>
-
-              <p className="flex gap-3 text-sm leading-relaxed text-muted">
-                <FileText aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-turquoise-700" />
-                Uw gegevens worden alleen gebruikt om uw aanvraag te behandelen en niet gedeeld voor marketingdoeleinden.
-                Het formulier is beveiligd met Cloudflare Turnstile.
-              </p>
+              </ul>
             </div>
           </div>
         </Container>

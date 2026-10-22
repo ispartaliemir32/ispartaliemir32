@@ -4,7 +4,7 @@ import { ImageResponse } from "next/og";
 
 // Wordt tijdens de build eenmalig als PNG gegenereerd (statische export).
 export const dynamic = "force-static";
-export const alt = "Kozbica IT: professionele IT voor het MKB in Rotterdam";
+export const alt = "Kozbica IT: veilige IT, zonder gedoe";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -39,17 +39,17 @@ export default async function OpengraphImage() {
         <img src={logo} width={330} height={88} alt="" />
 
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: 84, fontWeight: 800, lineHeight: 1.04, letterSpacing: -3 }}>Professionele IT.</div>
+          <div style={{ fontSize: 84, fontWeight: 800, lineHeight: 1.04, letterSpacing: -3 }}>Veilige IT,</div>
           <div style={{ fontSize: 84, fontWeight: 800, lineHeight: 1.04, letterSpacing: -3, color: "#099EA9" }}>
-            Zonder zorgen.
+            zonder gedoe.
           </div>
           <div style={{ marginTop: 30, fontSize: 30, fontWeight: 600, color: "rgba(255,255,255,0.78)" }}>
-            IT-beheer · Microsoft 365 · Cloud · Cybersecurity
+            IT-ondersteuning · Applicatiebeheer · IT-advies
           </div>
         </div>
 
         <div style={{ display: "flex", fontSize: 24, fontWeight: 600, color: "rgba(255,255,255,0.65)" }}>
-          IT-partner voor het MKB · Rotterdam en heel Nederland
+          Persoonlijke IT voor kleine bedrijven · Rotterdam en omgeving
         </div>
       </div>
     ),

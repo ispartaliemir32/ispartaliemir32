@@ -1,17 +1,13 @@
 /**
- * Nabewerking van de statische export in ./out (draait na `next build`).
+ * Nabewerking en controle van de statische export in ./out (draait na `next build`).
  *
- * 1. Content-Security-Policy per HTML-pagina
- *    Next.js plaatst inline <script>-blokken in elke pagina. Zonder server
- *    (statische export) kunnen we geen nonce gebruiken, dus berekenen we per
- *    pagina SHA-256-hashes van de inline scripts en zetten we een strikte CSP
- *    als <meta http-equiv="Content-Security-Policy"> bovenaan <head>.
- *
- * 2. Kwaliteitscontroles (de build faalt bij fouten)
- *    - geen kapotte interne links of ankers (#sectie)
- *    - geen mailto:/tel:-links naar [PLACEHOLDERS]
- *    - _headers binnen de limieten van Cloudflare (100 regels, 2.000 tekens per regel)
- *    - geen namen van geheimen in de publieke bestanden
+ * 1. Content-Security-Policy per pagina (als <meta>-tag, werkt bij elke host),
+ *    met SHA-256-hashes van de inline scripts zodat 'unsafe-inline' niet nodig is.
+ * 2. Kwaliteitscontroles; de build faalt bij een fout:
+ *    - geen kapotte interne links of ankers
+ *    - geen onbedoelde vermeldingen van zaken die Kozbica IT niet aanbiedt
+ *      (zie VERBODEN hieronder), in zichtbare tekst en in metatags
+ *    - geen cookies/trackingscripts van derden
  */
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -19,7 +15,6 @@ import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const OUT = fileURLToPath(new URL("../out", import.meta.url));
-const TURNSTILE_ORIGIN = "https://challenges.cloudflare.com";
 const errors = [];
 const warnings = [];
 
@@ -28,118 +23,80 @@ if (!existsSync(OUT)) {
   process.exit(1);
 }
 
-function walk(dir) {
-  return readdirSync(dir).flatMap((name) => {
+const walk = (dir) =>
+  readdirSync(dir).flatMap((name) => {
     const full = join(dir, name);
     return statSync(full).isDirectory() ? walk(full) : [full];
   });
-}
-
+const rel = (file) => relative(OUT, file).split(sep).join("/");
 const allFiles = walk(OUT);
 const htmlFiles = allFiles.filter((f) => f.endsWith(".html"));
-const rel = (file) => relative(OUT, file).split(sep).join("/");
 
-// ---------------------------------------------------------------------------
-// 1. CSP-meta-tag met hashes
-// ---------------------------------------------------------------------------
+// --- 1. CSP ---------------------------------------------------------------
 const INLINE_SCRIPT = /<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/gi;
-
-function buildCsp(hashes) {
-  const scriptSrc = ["'self'", ...hashes.map((h) => `'sha256-${h}'`), TURNSTILE_ORIGIN].join(" ");
-  return [
+const csp = (hashes) =>
+  [
     "default-src 'self'",
-    `script-src ${scriptSrc}`,
+    `script-src 'self' ${hashes.map((h) => `'sha256-${h}'`).join(" ")}`.trim(),
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
-    `connect-src 'self' ${TURNSTILE_ORIGIN}`,
-    `frame-src ${TURNSTILE_ORIGIN}`,
+    "connect-src 'self'",
+    "frame-src 'none'",
     "manifest-src 'self'",
-    "worker-src 'self'",
     "base-uri 'self'",
     "object-src 'none'",
     "form-action 'self'",
   ].join("; ");
-}
 
 let cspCount = 0;
 for (const file of htmlFiles) {
   let html = readFileSync(file, "utf8");
-  if (html.includes('http-equiv="Content-Security-Policy"')) {
-    html = html.replace(/<meta http-equiv="Content-Security-Policy" content="[^"]*"\/?>/, "");
-  }
-
+  html = html.replace(/<meta http-equiv="Content-Security-Policy" content="[^"]*"\/?>/, "");
   const hashes = new Set();
-  for (const match of html.matchAll(INLINE_SCRIPT)) {
-    const attrs = match[1] ?? "";
-    const body = match[2] ?? "";
-    // JSON-LD wordt niet uitgevoerd en valt niet onder script-src.
-    if (/type=["']application\/ld\+json["']/i.test(attrs) || body.length === 0) continue;
-    hashes.add(createHash("sha256").update(body, "utf8").digest("base64"));
+  for (const m of html.matchAll(INLINE_SCRIPT)) {
+    if (/application\/ld\+json/i.test(m[1] ?? "") || !m[2]) continue;
+    hashes.add(createHash("sha256").update(m[2], "utf8").digest("base64"));
   }
-
-  const meta = `<meta http-equiv="Content-Security-Policy" content="${buildCsp([...hashes])}"/>`;
+  const meta = `<meta http-equiv="Content-Security-Policy" content="${csp([...hashes])}"/>`;
   const charset = /<meta charSet="utf-8"\/>/i;
-  if (charset.test(html)) {
-    html = html.replace(charset, (m) => `${m}${meta}`);
-  } else if (/<head[^>]*>/i.test(html)) {
-    html = html.replace(/<head[^>]*>/i, (m) => `${m}${meta}`);
-  } else {
-    errors.push(`${rel(file)}: geen <head> gevonden voor CSP`);
+  if (charset.test(html)) html = html.replace(charset, (x) => `${x}${meta}`);
+  else if (/<head[^>]*>/i.test(html)) html = html.replace(/<head[^>]*>/i, (x) => `${x}${meta}`);
+  else {
+    errors.push(`${rel(file)}: geen <head> voor CSP`);
     continue;
   }
   writeFileSync(file, html);
   cspCount++;
 }
 
-// ---------------------------------------------------------------------------
-// 2a. Interne links en ankers
-// ---------------------------------------------------------------------------
+// --- 2a. Links en ankers ----------------------------------------------------
 const idCache = new Map();
-function idsIn(file) {
-  if (!idCache.has(file)) {
-    const html = readFileSync(file, "utf8");
-    idCache.set(file, new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])));
-  }
+const idsIn = (file) => {
+  if (!idCache.has(file)) idCache.set(file, new Set([...readFileSync(file, "utf8").matchAll(/\sid="([^"]+)"/g)].map((m) => m[1])));
   return idCache.get(file);
-}
-
+};
 function resolveTarget(pathname) {
   const clean = decodeURIComponent(pathname).replace(/\/+$/, "") || "/";
-  const candidates =
-    clean === "/"
-      ? ["index.html"]
-      : [clean.slice(1), `${clean.slice(1)}.html`, `${clean.slice(1)}/index.html`];
-  for (const candidate of candidates) {
-    const full = join(OUT, candidate);
+  const candidates = clean === "/" ? ["index.html"] : [clean.slice(1), `${clean.slice(1)}/index.html`, `${clean.slice(1)}.html`];
+  for (const c of candidates) {
+    const full = join(OUT, c);
     if (existsSync(full) && statSync(full).isFile()) return full;
   }
   return null;
 }
-
-const decodeEntities = (s) => s.replace(/&amp;/g, "&").replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
-
+const decode = (s) => s.replace(/&amp;/g, "&").replace(/&#x27;/g, "'").replace(/&quot;/g, '"');
 let linkCount = 0;
 for (const file of htmlFiles) {
   const html = readFileSync(file, "utf8");
-  for (const match of html.matchAll(/\s(href|src)="([^"]*)"/g)) {
-    const raw = decodeEntities(match[2]);
-    const where = `${rel(file)} → ${match[1]}="${raw}"`;
-
-    if (raw === "" || raw === "#") {
-      errors.push(`${where}: lege link`);
-      continue;
-    }
-    if (/^javascript:/i.test(raw)) {
-      errors.push(`${where}: javascript:-link`);
-      continue;
-    }
-    if (/^(mailto|tel):\s*\[/i.test(raw)) {
-      errors.push(`${where}: link naar een niet-ingevulde placeholder`);
+  for (const m of html.matchAll(/\s(href|src)="([^"]*)"/g)) {
+    const raw = decode(m[2]);
+    const where = `${rel(file)} → ${m[1]}="${raw}"`;
+    if (raw === "" || raw === "#" || /^javascript:/i.test(raw)) {
+      errors.push(`${where}: lege of onveilige link`);
       continue;
     }
     if (/^(https?:)?\/\//i.test(raw) || /^(mailto|tel|data):/i.test(raw)) continue;
-
     linkCount++;
     const url = new URL(raw, "https://site.invalid/" + rel(file));
     const target = raw.startsWith("#") ? file : resolveTarget(url.pathname);
@@ -147,55 +104,51 @@ for (const file of htmlFiles) {
       errors.push(`${where}: doel bestaat niet`);
       continue;
     }
-    const fragment = url.hash.slice(1);
-    if (fragment && target.endsWith(".html") && !idsIn(target).has(decodeURIComponent(fragment))) {
-      errors.push(`${where}: anker #${fragment} niet gevonden in ${rel(target)}`);
+    const frag = url.hash.slice(1);
+    if (frag && target.endsWith(".html") && !idsIn(target).has(decodeURIComponent(frag))) {
+      errors.push(`${where}: anker #${frag} niet gevonden in ${rel(target)}`);
     }
   }
 }
 
-// ---------------------------------------------------------------------------
-// 2b. _headers-limieten
-// ---------------------------------------------------------------------------
-const headersFile = join(OUT, "_headers");
-if (!existsSync(headersFile)) {
-  errors.push("out/_headers ontbreekt (verwacht vanuit public/_headers)");
-} else {
-  const lines = readFileSync(headersFile, "utf8").split("\n");
-  const rules = lines.filter((l) => l.trim() && !l.startsWith("#") && !/^\s/.test(l));
-  if (rules.length > 100) errors.push(`_headers bevat ${rules.length} regels (max. 100)`);
-  lines.forEach((line, i) => {
-    if (line.length > 2000) errors.push(`_headers regel ${i + 1} is langer dan 2.000 tekens`);
-  });
-}
-
-// ---------------------------------------------------------------------------
-// 2c. Geen geheimen in de publieke bestanden
-// ---------------------------------------------------------------------------
-const SECRET_MARKERS = ["TURNSTILE_SECRET_KEY", "RESEND_API_KEY", "MSGRAPH_CLIENT_SECRET", "1x0000000000000000000000000000000AA"];
-for (const file of allFiles.filter((f) => /\.(html|js|txt|json|css)$/.test(f))) {
-  const content = readFileSync(file, "utf8");
-  for (const marker of SECRET_MARKERS) {
-    if (content.includes(marker)) errors.push(`${rel(file)} bevat "${marker}"; geheimen horen niet in de frontend`);
+// --- 2b. Inhoud: niets vermelden wat Kozbica IT niet doet ---------------------
+const VERBODEN = [
+  /softwareontwikkel/i, /programmeer/i, /\bprogrammeren\b/i, /\bAPI'?s?\b/, /koppeling/i, /integratie/i,
+  /requirements/i, /specificatie/i, /projectleid/i, /\bhosting/i, /serverbeheer/i, /\bcloud/i, /\bAzure\b/,
+  /bekabeling/i, /hardware/i, /inkoop/i, /inkopen/i, /\bISO\b/, /\bNIS2\b/i, /compliance/i, /certificer/i, /certificat/i,
+  /24\/7/, /\bspoed/i, /\bSLA\b/, /hersteltijd/i, /garantie/i, /\bklantlogo/i, /\breview/i, /testimonial/i,
+];
+for (const file of htmlFiles) {
+  const html = readFileSync(file, "utf8").replace(/<script[\s\S]*?<\/script>/gi, "").replace(/<style[\s\S]*?<\/style>/gi, "");
+  const metas = [...html.matchAll(/<meta[^>]+content="([^"]*)"/g)].map((m) => m[1]).join(" ");
+  const text = html.replace(/<[^>]+>/g, " ") + " " + metas;
+  for (const re of VERBODEN) {
+    const hit = text.match(re);
+    if (hit) errors.push(`${rel(file)}: bevat "${hit[0]}", dat past niet bij het aanbod`);
   }
 }
 
-if (!existsSync(join(OUT, "404.html"))) warnings.push("out/404.html ontbreekt (404-pagina voor not_found_handling)");
-
-// Bedrijfsgegevens die nog niet zijn ingevuld, horen niet zichtbaar op de site te staan.
+// --- 2c. Geen scripts of verzoeken naar derden ---------------------------------
 for (const file of htmlFiles) {
-  const visible = readFileSync(file, "utf8").replace(/<script[\s\S]*?<\/script>/gi, "");
-  const found = visible.match(/\[(EMAIL|PHONE|KVK|BTW|ADRES)\]/g);
-  if (found) warnings.push(`${rel(file)} toont nog placeholder(s): ${[...new Set(found)].join(", ")}`);
+  const html = readFileSync(file, "utf8");
+  for (const m of html.matchAll(/<script[^>]+src="(https?:)?\/\/[^"]+"/g)) errors.push(`${rel(file)}: extern script ${m[0]}`);
+}
+for (const f of ["_headers", ".htaccess"]) {
+  if (!existsSync(join(OUT, f))) errors.push(`out/${f} ontbreekt (verwacht vanuit public/${f})`);
+}
+if (!existsSync(join(OUT, "404.html"))) errors.push("out/404.html ontbreekt");
+
+// --- 2d. Placeholders ----------------------------------------------------------
+for (const file of htmlFiles) {
+  const text = readFileSync(file, "utf8").replace(/<script[\s\S]*?<\/script>/gi, "");
+  const found = [...new Set(text.match(/\[(KVK-NUMMER|EMAIL|PHONE|BTW|ADRES)\]/g) ?? [])];
+  if (found.length && !warnings.some((w) => w.includes(found.join(", ")))) warnings.push(`${rel(file)}: placeholder ${found.join(", ")} (invullen in src/config/site.ts)`);
 }
 
-// ---------------------------------------------------------------------------
-for (const w of warnings) console.warn(`⚠ ${w}`);
-if (errors.length > 0) {
+for (const w of warnings.slice(0, 3)) console.warn(`⚠ ${w}`);
+if (errors.length) {
   console.error(`\n✖ Postbuild-controle mislukt (${errors.length} fout(en)):`);
   for (const e of errors) console.error(`  - ${e}`);
   process.exit(1);
 }
-console.log(
-  `✓ Postbuild: CSP toegevoegd aan ${cspCount} HTML-pagina's, ${linkCount} interne links/bronnen gecontroleerd, _headers geldig.`,
-);
+console.log(`✓ Postbuild: CSP op ${cspCount} pagina's, ${linkCount} interne links gecontroleerd, geen verboden inhoud, geen externe scripts.`);

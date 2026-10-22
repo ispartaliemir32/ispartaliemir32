@@ -20,13 +20,13 @@ export default function NotFound() {
           Deze pagina bestaat niet (meer)
         </h1>
         <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
-          Mogelijk is de link verouderd of is het adres verkeerd getypt. Via de links hieronder vindt u snel wat u zoekt.
+          Mogelijk is de link verouderd of is het adres verkeerd getypt. Via de links hieronder vind je snel wat je zoekt.
         </p>
         <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
           <ButtonLink href="/" size="lg" withArrow>
             Naar de homepage
           </ButtonLink>
-          <ButtonLink href="/contact" size="lg" variant="secondary">
+          <ButtonLink href="/contact/" size="lg" variant="secondary">
             Neem contact op
           </ButtonLink>
         </div>

@@ -1,4 +1,4 @@
-import { Building2, Cloud, Handshake, RefreshCw, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
+import { FileText, MessagesSquare, ShieldCheck, UserRound, type LucideIcon } from "lucide-react";
 import { ButtonLink } from "@/components/ui/Button";
 import { IconBadge } from "@/components/ui/IconBadge";
 import { Section, SectionHeader } from "@/components/ui/Section";
@@ -6,55 +6,44 @@ import { Section, SectionHeader } from "@/components/ui/Section";
 const reasons: { icon: LucideIcon; title: string; text: string }[] = [
   {
     icon: UserRound,
-    title: "Persoonlijk IT-contact",
-    text: "Eén vast aanspreekpunt dat uw bedrijf en uw IT-omgeving kent. U hoeft uw verhaal niet steeds opnieuw te vertellen.",
+    title: "Persoonlijk",
+    text: "Je spreekt altijd met mij. Geen callcenter, geen wisselende gezichten en je hoeft je verhaal maar één keer te vertellen.",
   },
   {
-    icon: Building2,
-    title: "Gericht op het MKB",
-    text: "Oplossingen voor bedrijven met 5 tot 30 medewerkers: degelijk geregeld, zonder onnodige complexiteit.",
+    icon: MessagesSquare,
+    title: "Uitleg zonder vakjargon",
+    text: "Ik leg uit wat er aan de hand is en wat ik doe, in gewone taal. Zo snap je wat je krijgt.",
   },
   {
-    icon: Cloud,
-    title: "Microsoft 365 & Cloud",
-    text: "Focus op de Microsoft-omgeving waarin uw team dagelijks werkt, van e-mail en Teams tot apparaatbeheer en Azure.",
+    icon: FileText,
+    title: "Geen ingewikkelde contracten",
+    text: "Wel duidelijke afspraken vooraf. Je betaalt alleen de tijd die het kost.",
   },
   {
     icon: ShieldCheck,
-    title: "Veilig en toekomstgericht",
-    text: "Beveiliging is bij alles wat we doen het uitgangspunt, geen optie die u er later bij moet kopen.",
-  },
-  {
-    icon: RefreshCw,
-    title: "Flexibele ondersteuning",
-    text: "Eenmalige hulp bij een project of structureel beheer: u kiest wat past bij de fase van uw bedrijf.",
-  },
-  {
-    icon: Handshake,
-    title: "Heldere afspraken",
-    text: "U weet vooraf wat we doen en wat het kost. Licenties en hardware staan altijd apart en transparant vermeld.",
+    title: "Veiligheid als basis",
+    text: "Een veilige werkplek begint met de basis, zoals MFA en goed beheerde accounts. Die breng ik voor je op orde.",
   },
 ];
 
 export function WhyUs() {
   return (
     <Section id="waarom" tone="mist" labelledBy="waarom-titel">
-      <div className="grid gap-14 lg:grid-cols-12 lg:gap-16">
+      <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
           <div className="lg:sticky lg:top-28">
             <SectionHeader
               id="waarom-titel"
-              eyebrow="Waarom Kozbica IT"
-              title="Een IT-partner die uw bedrijf écht kent"
-              intro="Kozbica IT is een onafhankelijk IT-bedrijf uit Rotterdam. Geen groot callcenter, maar korte lijnen en directe communicatie met degene die uw IT beheert."
+              eyebrow="Over Kozbica IT"
+              title="IT die je niet hoeft te begrijpen"
+              intro="Kozbica IT biedt persoonlijke IT-ondersteuning voor kleine bedrijven in Rotterdam en omgeving. Ik help bij het beheer van Microsoft 365, Entra ID en Intune: gebruikers en licenties beheren, werkplekken en laptops inrichten, beveiliging zoals MFA op orde brengen en storingen oplossen."
             />
             <p className="mt-5 leading-relaxed text-muted">
-              Wij geloven dat goede IT niet alleen is weggelegd voor grote organisaties. Met moderne Microsoft-technologie
-              en een praktische aanpak krijgt ook uw bedrijf een professionele, veilige IT-omgeving.
+              Geen ingewikkelde contracten, wel duidelijke afspraken en heldere uitleg zonder vakjargon.
             </p>
             <div className="mt-8">
-              <ButtonLink href="/over-ons" variant="secondary" withArrow>
-                Meer over Kozbica IT
+              <ButtonLink href="/over-ons/" variant="secondary" withArrow>
+                Meer over mij
               </ButtonLink>
             </div>
           </div>

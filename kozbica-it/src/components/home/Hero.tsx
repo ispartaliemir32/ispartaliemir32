@@ -1,13 +1,12 @@
-import { Building2, MapPin, UserRound } from "lucide-react";
-import { ButtonLink } from "@/components/ui/Button";
+import { Clock, Receipt, UserRound } from "lucide-react";
+import { ContactActions } from "@/components/ui/ContactActions";
 import { Container } from "@/components/ui/Container";
-import { primaryCta } from "@/content/navigation";
 import { HeroVisual } from "./HeroVisual";
 
 const indicators = [
-  { icon: UserRound, text: "Persoonlijk, vast aanspreekpunt" },
-  { icon: Building2, text: "Gericht op het MKB (5–30 medewerkers)" },
-  { icon: MapPin, text: "Rotterdam en op afstand in heel Nederland" },
+  { icon: UserRound, text: "Persoonlijk contact, geen callcenter" },
+  { icon: Clock, text: "Reactie binnen 1 werkdag" },
+  { icon: Receipt, text: "Duidelijke tarieven, per kwartier" },
 ];
 
 export function Hero() {
@@ -28,29 +27,22 @@ export function Hero() {
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-turquoise-400 opacity-60 motion-reduce:hidden" />
               <span className="relative inline-flex size-2 rounded-full bg-turquoise-500" />
             </span>
-            IT-partner voor het MKB in Rotterdam
+            IT-ondersteuning in Rotterdam en omgeving
           </p>
 
           <h1 id="hero-titel" className="mt-6 text-[2.75rem] leading-[1.04] font-extrabold sm:text-6xl lg:text-[4.1rem]">
-            Professionele IT.{" "}
+            Veilige IT,{" "}
             <span className="block bg-linear-to-r from-turquoise-700 to-turquoise-500 bg-clip-text pb-[0.12em] text-transparent">
-              Zonder zorgen.
+              zonder gedoe.
             </span>
           </h1>
 
           <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-            Kozbica IT ondersteunt het MKB met betrouwbaar IT-beheer, Microsoft 365, cloudoplossingen en cybersecurity.
-            Eén aanspreekpunt voor al uw IT-vraagstukken.
+            Persoonlijke IT-ondersteuning voor kleine bedrijven. Ik help met Microsoft 365, Entra ID en Intune, met
+            heldere uitleg zonder vakjargon.
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <ButtonLink href={primaryCta.href} size="lg" withArrow>
-              {primaryCta.label}
-            </ButtonLink>
-            <ButtonLink href="/diensten" size="lg" variant="secondary">
-              Bekijk onze diensten
-            </ButtonLink>
-          </div>
+          <ContactActions className="mt-9" subject="Vraag via kozbica.nl" />
 
           <ul className="mt-10 grid gap-3 text-[0.9375rem] text-navy-800 sm:grid-cols-1">
             {indicators.map(({ icon: Icon, text }) => (

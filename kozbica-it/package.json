@@ -2,23 +2,21 @@
   "name": "kozbica-it-website",
   "version": "1.0.0",
   "private": true,
-  "description": "Website van Kozbica IT – Next.js static export op Cloudflare Workers Static Assets met een Worker voor het contactformulier.",
+  "description": "Website van Kozbica IT: statische Next.js-export, te hosten bij elke webhost.",
   "license": "UNLICENSED",
   "engines": {
     "node": ">=22.12.0"
   },
   "scripts": {
     "dev": "next dev",
-    "dev:worker": "node scripts/ensure-out-dir.mjs && wrangler dev --port 8787",
     "build": "next build && node scripts/postbuild.mjs",
-    "preview": "npm run build && wrangler dev --port 8787",
-    "deploy": "npm run build && wrangler deploy",
-    "deploy:dry-run": "wrangler deploy --dry-run --outdir .wrangler/dry-run",
+    "preview": "npm run build && npx wrangler dev --port 8787",
+    "deploy": "npm run build && npx wrangler deploy",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit && tsc -p worker/tsconfig.json --noEmit",
-    "test": "vitest run",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build",
-    "brand": "node scripts/generate-brand-assets.mjs"
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run build",
+    "brand": "node scripts/generate-brand-assets.mjs",
+    "zip": "node scripts/make-upload-zip.mjs"
   },
   "dependencies": {
     "lucide-react": "1.55.0",
@@ -27,7 +25,6 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "5.20261010.1",
     "@fontsource/manrope": "5.3.0",
     "@tailwindcss/postcss": "4.3.3",
     "@types/node": "22.20.5",
@@ -38,7 +35,6 @@
     "sharp": "0.35.5",
     "tailwindcss": "4.3.3",
     "typescript": "5.9.3",
-    "vitest": "5.0.3",
     "wrangler": "4.149.0"
   }
 }

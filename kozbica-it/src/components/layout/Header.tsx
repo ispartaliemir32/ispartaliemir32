@@ -7,7 +7,8 @@ import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { mainNav, primaryCta } from "@/content/navigation";
+import { mainNav } from "@/content/navigation";
+import { mailHref, phoneHref, site } from "@/config/site";
 import { cn } from "@/lib/cn";
 
 function isActive(pathname: string, href: string) {
@@ -104,9 +105,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <span className="hidden sm:block">
-            <ButtonLink href={primaryCta.href} withArrow>
-              {primaryCta.shortLabel}
-            </ButtonLink>
+            <ButtonLink href={mailHref("Vraag via kozbica.nl")}>Stuur een e-mail</ButtonLink>
           </span>
           <button
             ref={toggleRef}
@@ -153,10 +152,13 @@ export function Header() {
             </ul>
           </nav>
           <div className="mt-4 pb-2">
-            <ButtonLink href={primaryCta.href} size="lg" className="w-full" withArrow onClick={() => close(false)}>
-              {primaryCta.label}
+            <ButtonLink href={mailHref("Vraag via kozbica.nl")} size="lg" className="w-full" onClick={() => close(false)}>
+              Stuur een e-mail
             </ButtonLink>
-            <p className="mt-3 text-center text-sm text-muted">Vrijblijvend · Rotterdam en heel Nederland op afstand</p>
+            <ButtonLink href={phoneHref} size="lg" variant="secondary" className="mt-3 w-full" onClick={() => close(false)}>
+              Bel {site.contact.phone}
+            </ButtonLink>
+            <p className="mt-3 text-center text-sm text-muted">Reactie binnen 1 werkdag · {site.serviceArea}</p>
           </div>
         </Container>
       </div>

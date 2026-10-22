@@ -1,4 +1,4 @@
-import { Check, Cloud, DatabaseBackup, Fingerprint, Headset, Laptop, Mails, ShieldCheck, UserPlus, type LucideIcon } from "lucide-react";
+import { Check, Fingerprint, Headset, KeyRound, Laptop, Mails, ShieldCheck, UserPlus, Users, type LucideIcon } from "lucide-react";
 import shield from "@/assets/brand/kozbica-it-schild.png";
 
 /**
@@ -14,11 +14,11 @@ const CENTER = { x: 240, y: 200 };
 // Posities in het SVG-assenstelsel (480 x 400). Linksonder blijft vrij voor het zwevende kaartje.
 const nodes: Node[] = [
   { label: "Microsoft 365", icon: Mails, x: 240, y: 68, labelAbove: true },
-  { label: "Cloud & Azure", icon: Cloud, x: 388, y: 122 },
-  { label: "Beveiliging", icon: ShieldCheck, x: 402, y: 222 },
-  { label: "Back-up", icon: DatabaseBackup, x: 240, y: 326 },
-  { label: "Werkplekken", icon: Laptop, x: 78, y: 222 },
-  { label: "Identiteit", icon: Fingerprint, x: 92, y: 122 },
+  { label: "Gebruikers", icon: Users, x: 388, y: 122 },
+  { label: "MFA", icon: ShieldCheck, x: 402, y: 222 },
+  { label: "Licenties", icon: KeyRound, x: 240, y: 326 },
+  { label: "Intune", icon: Laptop, x: 78, y: 222 },
+  { label: "Entra ID", icon: Fingerprint, x: 92, y: 122 },
 ];
 
 export function HeroVisual() {
@@ -120,8 +120,8 @@ export function HeroVisual() {
           <Headset className="size-4.5" />
         </span>
         <div>
-          <p className="text-sm font-semibold text-navy-900">Vast aanspreekpunt</p>
-          <p className="text-xs text-muted">Persoonlijk en direct</p>
+          <p className="text-sm font-semibold text-navy-900">Persoonlijk aanspreekpunt</p>
+          <p className="text-xs text-muted">Direct en duidelijk</p>
         </div>
       </div>
     </div>

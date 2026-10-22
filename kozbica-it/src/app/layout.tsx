@@ -3,6 +3,7 @@ import { Inter, Manrope } from "next/font/google";
 import type { ReactNode } from "react";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { MobileContactBar } from "@/components/layout/MobileContactBar";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { site } from "@/config/site";
 import { organizationSchema, websiteSchema } from "@/lib/structured-data";
@@ -16,7 +17,7 @@ const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", displa
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "IT-beheer voor het MKB in Rotterdam | Kozbica IT",
+    default: "Veilige IT, zonder gedoe | Kozbica IT Rotterdam",
     template: "%s | Kozbica IT",
   },
   description: site.description,
@@ -45,7 +46,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="nl" className={`${inter.variable} ${manrope.variable}`}>
-      <body className="flex min-h-dvh flex-col">
+      <body className="flex min-h-dvh flex-col pb-[4.25rem] sm:pb-0">
         <a
           href="#inhoud"
           className="sr-only z-[60] rounded-full bg-navy-900 px-5 py-3 font-semibold text-white focus:not-sr-only focus:fixed focus:top-3 focus:left-3"
@@ -57,6 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           {children}
         </main>
         <Footer />
+        <MobileContactBar />
         <JsonLd data={[organizationSchema(), websiteSchema()]} />
       </body>
     </html>

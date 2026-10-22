@@ -1,63 +1,46 @@
 /**
- * Centrale bedrijfs- en siteconfiguratie.
- *
- * Waarden tussen [BLOKHAKEN] zijn placeholders die nog door Kozbica IT
- * moeten worden ingevuld. Zolang een waarde een placeholder is, toont de
- * website die als platte tekst (zonder mailto:/tel:-link) en wordt de waarde
- * niet opgenomen in gestructureerde data voor zoekmachines.
+ * Centrale bedrijfsgegevens van Kozbica IT. Pas het KvK-nummer hier aan zodra
+ * het bekend is; alle pagina's, de footer en de structured data volgen mee.
  */
 
-const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kozbica.nl";
+
+const EMAIL = "kozbica.it@gmail.com";
+const PHONE_DISPLAY = "06 43 65 00 90";
 
 export const site = {
   name: "Kozbica IT",
-  legalName: "Kozbica IT",
   url: rawSiteUrl.replace(/\/+$/, ""),
   locale: "nl_NL",
-  language: "nl",
-  tagline: "Professionele IT. Zonder zorgen.",
+  slogan: "Veilige IT, zonder gedoe.",
   description:
-    "Kozbica IT is een onafhankelijke IT-dienstverlener uit Rotterdam voor het MKB: IT-beheer, Microsoft 365, cloudoplossingen en cybersecurity, met één vast aanspreekpunt.",
-  location: {
-    city: "Rotterdam",
-    region: "Zuid-Holland",
-    countryCode: "NL",
-    country: "Nederland",
-  },
-  serviceArea: "Rotterdam, Zuid-Holland en op afstand in heel Nederland",
+    "Kozbica IT biedt persoonlijke IT-ondersteuning voor kleine bedrijven in Rotterdam en omgeving: Microsoft 365, Entra ID en Intune, applicatiebeheer en IT-advies.",
+  city: "Rotterdam",
+  serviceArea: "Rotterdam en omgeving",
   contact: {
-    email: "[EMAIL]",
-    phone: "[PHONE]",
-    kvk: "[KVK]",
-    btw: "[BTW]",
-    /** Vestigingsadres (nodig voor de privacyverklaring). */
-    address: "[ADRES]",
+    email: EMAIL,
+    phone: PHONE_DISPLAY,
+    /** Internationaal formaat voor tel:-links. */
+    phoneHref: "+31643650090",
+    /** Vervang door het echte nummer zodra bekend. */
+    kvk: "[KVK-NUMMER]",
   },
-  /**
-   * Juridische status. Zet op `false` zodra een jurist de tekst heeft goedgekeurd:
-   * dan verdwijnen de concept-banner en de markeringen "Juridisch controleren".
-   */
-  legal: {
-    privacyIsDraft: true,
-    termsIsDraft: true,
-    lastUpdated: "10 oktober 2026",
-  },
+  /** Zodra het KvK-nummer is ingevuld verdwijnt de placeholder vanzelf. */
+  lastUpdated: "oktober 2026",
 } as const;
 
-/** True als de waarde nog een [PLACEHOLDER] is. */
 export function isPlaceholder(value: string): boolean {
   return /^\[[^\]]+\]$/.test(value.trim());
-}
-
-/**
- * De ingevulde waarde, of `null` zolang het nog een placeholder is.
- * Niet-ingevulde gegevens worden op de website weggelaten in plaats van als
- * "[EMAIL]" getoond, zodat de site al live kan voordat alles bekend is.
- */
-export function filled(value: string): string | null {
-  return isPlaceholder(value) ? null : value;
 }
 
 export function absoluteUrl(path = "/"): string {
   return `${site.url}${path === "/" ? "" : path}`;
 }
+
+/** mailto-link met een vooraf ingevuld onderwerp. */
+export function mailHref(subject?: string): string {
+  const base = `mailto:${site.contact.email}`;
+  return subject ? `${base}?subject=${encodeURIComponent(subject)}` : base;
+}
+
+export const phoneHref = `tel:${site.contact.phoneHref}`;
