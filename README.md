@@ -31,13 +31,6 @@ Java · Spring Boot · TypeScript · React · PostgreSQL · REST APIs · OpenAPI
 **DevOps**  
 Git · GitHub Actions · CI/CD · Infrastructure as Code · Azure OIDC
 
-## 🎯 Currently
-
-- Preparing for **SC-200** (Microsoft Security Operations Analyst) through the Cloud Security Lab
-- Extending detection coverage: service principals, workload identities, Defender for Cloud
-- Automating Microsoft 365 and Intune reporting with Graph
-- Kubernetes and container platforms on Azure
-
 ## 📌 How I work
 
 - Small, tested, readable changes over big clever ones
